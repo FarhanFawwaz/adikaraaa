@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroRehab Glove AI - ADIKARA 2025</title>
+    <style>
+        /* --- GLOBAL VARIABLES --- */
+        :root {
+            --primary: #0056b3;
+            --accent: #00d4ff;
+            --dark: #0f172a;     /* Background Dashboard */
+            --card-dark: #1e293b; /* Card Dashboard */
+            --light: #f8fafc;
+            --text-dark: #334155;
+            --text-light: #f1f5f9;
+            --success: #10b981;  /* ECG Green */
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --purple: #8b5cf6;   /* Gamification */
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; transition: all 0.3s ease; }
+        html { scroll-behavior: smooth; }
+        body { overflow-x: hidden; }
+
+        /* --- NAVIGATION --- */
+        nav {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        nav .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        nav .nav-links { display: flex; list-style: none; gap: 25px; }
+        nav a { text-decoration: none; color: var(--text-dark); font-weight: 600; cursor: pointer; }
+        nav a:hover { color: var(--primary); }
+        .btn-nav {
+            background: var(--primary); color: white !important;
+            padding: 8px 20px; border-radius: 50px;
+        }
+        .btn-nav:hover { background: var(--accent); color: var(--dark) !important; }
+
+        /* --- VIEWS CONTROL --- */
+        .view-section { display: none; padding-top: 80px; min-height: 100vh; }
+        .active-view { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* =================LANDING PAGE STYLES================= */
+        #landing-view { background: var(--light); color: var(--text-dark); }
+        
+        .hero {
+            display: flex; align-items: center; padding: 50px 5%;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white; border-bottom-right-radius: 100px;
+        }
+        .hero-text { flex: 1; padding-right: 40px; }
+        .hero-text h1 { font-size: 3rem; line-height: 1.2; margin-bottom: 20px; }
+        .hero-text p { font-size: 1.1rem; opacity: 0.9; margin-bottom: 30px; }
+        .hero-img { flex: 1; text-align: center; }
+        .hero-img img { max-width: 100%; border-radius: 20px; box-shadow: 0 0 30px rgba(0, 212, 255, 0.2); }
+        
+        .btn-cta {
+            background: var(--accent); color: var(--dark); padding: 15px 40px;
+            font-size: 1.1rem; font-weight: bold; border: none; border-radius: 50px; cursor: pointer;
+            text-decoration: none; display: inline-block;
+        }
+        .btn-cta:hover { transform: scale(1.05); box-shadow: 0 0 20px var(--accent); }
+
+        .features { padding: 80px 5%; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .card-feature {
+            background: white; padding: 30px; border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-top: 5px solid var(--primary);
+        }
+
+        /* =================DASHBOARD STYLES================= */
+        #dashboard-view { background: var(--dark); color: var(--text-light); padding: 100px 2% 20px 2%; }
+        
+        .dash-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .status-pill {
+            background: rgba(16, 185, 129, 0.2); color: var(--success);
+            padding: 5px 15px; border-radius: 20px; font-size: 0.9rem;
+            display: flex; align-items: center; gap: 8px; border: 1px solid var(--success);
+        }
+        .blink { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse 1.5s infinite; }
+
+        .dash-grid {
+            display: grid; grid-template-columns: 280px 1fr 300px;
+            grid-template-rows: auto auto; gap: 20px;
+        }
+
+        .d-card {
+            background: var(--card-dark); border-radius: 15px; padding: 20px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .d-card h3 { color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; }
+
+        /* Patient Profile */
+        .profile-img { width: 80px; height: 80px; background: #334155; border-radius: 50%; margin: 0 auto 15px; display: grid; place-items: center; font-size: 2.5rem; }
+        .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #334155; font-size: 0.9rem; }
+
+        /* ECG Canvas */
+        .ecg-wrapper { position: relative; width: 100%; height: 250px; overflow: hidden; }
+        canvas { width: 100%; height: 100%; }
+        .overlay-bpm { position: absolute; top: 10px; right: 10px; text-align: right; }
+        .val-big { font-size: 2.5rem; font-weight: bold; color: var(--text-light); }
+
+        /* Flex Sensors */
+        .hand-viz { display: flex; justify-content: space-around; align-items: flex-end; height: 150px; margin-top: 20px; }
+        .finger { width: 14%; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .bar-bg { width: 100%; height: 100px; background: #334155; border-radius: 8px; position: relative; overflow: hidden; }
+        .bar-fill { width: 100%; position: absolute; bottom: 0; background: var(--accent); transition: height 0.2s; border-radius: 8px; }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .dash-grid { grid-template-columns: 1fr 1fr; }
+            .patient-box { grid-column: span 2; display: flex; gap: 20px; align-items: center; }
+        }
+        @media (max-width: 768px) {
+            .hero { flex-direction: column; }
+            .hero-text { padding: 0; text-align: center; margin-bottom: 40px; }
+            .dash-grid { grid-template-columns: 1fr; }
+            .patient-box { flex-direction: column; }
+            .nav-links { display: none; } /* Simplified for mobile */
+        }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">
+            <span style="font-size:2rem;">🧤</span> NeuroRehab AI
+        </div>
+        <ul class="nav-links">
+            <li><a onclick="switchView('landing')">Beranda</a></li>
+            <li><a href="#about" onclick="switchView('landing')">Tentang</a></li>
+            <li><a href="#features" onclick="switchView('landing')">Fitur</a></li>
+            <li><a onclick="switchView('dashboard')" class="btn-nav">Live Demo Dashboard</a></li>
+        </ul>
+    </nav>
+
+    <main id="landing-view" class="view-section active-view">
+        <section class="hero">
+            <div class="hero-text">
+                <span style="color:var(--accent); font-weight:bold; letter-spacing:1px;">INOVASI ADIKARA 2025</span>
+                <h1>Rehabilitasi Stroke & Deteksi Jantung dalam Satu Genggaman</h1>
+                <p>Menggabungkan IoT, AI, dan Gamifikasi untuk pemulihan motorik yang menyenangkan serta deteksi dini risiko Aritmia (AFib) menggunakan sensor MAX30102 & AD8232.</p>
+                <button onclick="switchView('dashboard')" class="btn-cta">Lihat Prototype &rarr;</button>
+            </div>
+            <div class="hero-img">
+                <img src="gloves (1).png" alt="NeuroRehab Glove">
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <h2 style="text-align: center; margin-bottom: 50px; color:var(--primary);">Solusi Terintegrasi</h2>
+            <div class="grid-3">
+                <div class="card-feature">
+                    <h3 style="color:var(--primary);">🎯 Gamifikasi Flex Sensor</h3>
+                    <p>Latihan fisioterapi membosankan diubah menjadi permainan interaktif. Sensor mendeteksi lekukan jari secara presisi.</p>
+                </div>
+                <div class="card-feature">
+                    <h3 style="color:var(--success);">❤️ ECG & Oximeter</h3>
+                    <p>Sensor AD8232 memantau kelistrikan jantung dan MAX30102 mengukur saturasi oksigen untuk keamanan pasien.</p>
+                </div>
+                <div class="card-feature">
+                    <h3 style="color:var(--purple);">🤖 AI Risk Analysis</h3>
+                    <p>Algoritma cerdas menganalisis pola gerakan dan detak jantung untuk memberikan peringatan dini stroke berulang.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="features" style="background: white;">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 40px;">
+                <div style="flex: 1;">
+                    <img src="arsitek.png" style="width:100%; border-radius:10px;" alt="System Diagram">
+                </div>
+                <div style="flex: 1;">
+                    <h2>Cara Kerja Sistem</h2>
+                    <ol style="margin-left: 20px; line-height: 2;">
+                        <li>Pasien menggunakan <strong>NeuroRehab Glove</strong>.</li>
+                        <li>Sensor <strong>Flex & IMU</strong> mengirim data gerakan ke ESP32.</li>
+                        <li>Sensor <strong>AD8232</strong> merekam aktivitas jantung.</li>
+                        <li>Data dikirim via <strong>IoT/MQTT</strong> ke Dashboard.</li>
+                        <li><strong>AI Engine</strong> memberikan feedback dan skor game.</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <main id="dashboard-view" class="view-section">
+        
+        <div class="dash-header">
+            <div>
+                <button onclick="switchView('landing')" style="background:none; border:none; color:var(--accent); cursor:pointer; font-size:0.9rem;">&larr; Kembali ke Beranda</button>
+                <h2 style="color:white; margin-top:5px;">Patient Monitoring Dashboard</h2>
+            </div>
+            <div class="status-pill">
+                <div class="blink"></div> Device Connected (ESP32)
+            </div>
+        </div>
+
+        <div class="dash-grid">
+            
+            <div class="d-card patient-box">
+                <div class="profile-img">👨‍🦳</div>
+                <div style="width:100%">
+                    <h3 style="color:white; font-size:1.2rem; text-align:center; margin-bottom:20px;">Bpk. Hartono (68)</h3>
+                    <div class="stat-row"><span>Status:</span> <span style="color:var(--warning)">Post-Stroke Rehab</span></div>
+                    <div class="stat-row"><span>Therapy:</span> <span>Sesi ke-12</span></div>
+                    <div class="stat-row"><span>Duration:</span> <span>15:30 min</span></div>
+                    <div class="stat-row" style="border:none; margin-top:10px;">
+                        <span style="font-weight:bold; color:var(--purple);">Game Level: 5</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-card" style="grid-column: span 1;">
+                <h3>Real-time ECG (AD8232)</h3>
+                <div class="ecg-wrapper">
+                    <canvas id="ecgCanvas"></canvas>
+                    <div class="overlay-bpm">
+                        <span style="font-size:0.8rem; color:#94a3b8;">HEART RATE</span><br>
+                        <span id="bpmVal" class="val-big" style="color:var(--success)">72</span> <span style="font-size:1rem;">BPM</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-card" style="display:flex; flex-direction:column; gap:15px;">
+                <h3>Vitals & AI Analysis</h3>
+                
+                <div style="display:flex; justify-content:space-between; text-align:center; background:#0f172a; padding:15px; border-radius:10px;">
+                    <div>
+                        <div style="font-size:0.8rem; color:#94a3b8;">SpO2 (MAX30102)</div>
+                        <div id="spo2Val" style="font-size:1.8rem; font-weight:bold; color:var(--accent);">98%</div>
+                    </div>
+                    <div>
+                        <div style="font-size:0.8rem; color:#94a3b8;">Temp</div>
+                        <div style="font-size:1.8rem; font-weight:bold; color:orange;">36.5°</div>
+                    </div>
+                </div>
+
+                <div style="background:rgba(239, 68, 68, 0.1); border:1px solid var(--danger); padding:15px; border-radius:10px; flex:1;">
+                    <strong style="color:var(--danger); display:flex; align-items:center; gap:5px;">⚠️ AI Risk Alert</strong>
+                    <p style="font-size:0.85rem; margin-top:5px; line-height:1.4;">
+                        Analisis ritme jantung stabil. Tidak terdeteksi pola Atrial Fibrillation (AFib). Aman untuk lanjut latihan.
+                    </p>
+                </div>
+            </div>
+
+            <div class="d-card" style="grid-column: 1 / -1;">
+                <div style="display:flex; justify-content:space-between;">
+                    <h3>Hand Movement Visualization (Flex Sensors)</h3>
+                    <span style="color:var(--purple); font-weight:bold;">Current Task: Full Grip (Menggenggam)</span>
+                </div>
+                
+                <div class="hand-viz">
+                    <div class="finger">
+                        <div class="bar-bg"><div id="f1" class="bar-fill" style="height:20%"></div></div>
+                        <span style="font-size:0.8rem; margin-top:5px;">Jempol</span>
+                    </div>
+                    <div class="finger">
+                        <div class="bar-bg"><div id="f2" class="bar-fill" style="height:50%"></div></div>
+                        <span style="font-size:0.8rem; margin-top:5px;">Telunjuk</span>
+                    </div>
+                    <div class="finger">
+                        <div class="bar-bg"><div id="f3" class="bar-fill" style="height:80%"></div></div>
+                        <span style="font-size:0.8rem; margin-top:5px;">Tengah</span>
+                    </div>
+                    <div class="finger">
+                        <div class="bar-bg"><div id="f4" class="bar-fill" style="height:40%"></div></div>
+                        <span style="font-size:0.8rem; margin-top:5px;">Manis</span>
+                    </div>
+                    <div class="finger">
+                        <div class="bar-bg"><div id="f5" class="bar-fill" style="height:10%"></div></div>
+                        <span style="font-size:0.8rem; margin-top:5px;">Kelingking</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // 1. VIEW SWITCHER
+        function switchView(viewName) {
+            const landing = document.getElementById('landing-view');
+            const dashboard = document.getElementById('dashboard-view');
+            
+            if(viewName === 'dashboard') {
+                landing.classList.remove('active-view');
+                setTimeout(() => { landing.style.display = 'none'; }, 200);
+                
+                dashboard.style.display = 'block';
+                setTimeout(() => { dashboard.classList.add('active-view'); }, 50);
+                
+                // Trigger resize canvas saat dashboard muncul agar tidak gepeng
+                resizeCanvas();
+            } else {
+                dashboard.classList.remove('active-view');
+                setTimeout(() => { dashboard.style.display = 'none'; }, 200);
+                
+                landing.style.display = 'block';
+                setTimeout(() => { landing.classList.add('active-view'); }, 50);
+            }
+        }
+
+        // 2. ECG SIMULATION (Canvas)
+        const canvas = document.getElementById('ecgCanvas');
+        const ctx = canvas.getContext('2d');
+        let dataPoints = [];
+        let time = 0;
+
+        function resizeCanvas() {
+            const parent = canvas.parentElement;
+            canvas.width = parent.clientWidth;
+            canvas.height = parent.clientHeight;
+            dataPoints = new Array(canvas.width).fill(canvas.height / 2);
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function generateECG(t) {
+            // Simulasi gelombang PQRST sederhana
+            let base = Math.sin(t * 0.1) * 5; 
+            let beat = 0;
+            // Detak setiap 80 frame
+            if (t % 80 > 70 && t % 80 < 76) beat = -80 + (Math.random()*10); // R peak
+            else if (t % 80 > 65 && t % 80 <= 70) beat = 15; // Q
+            else if (t % 80 > 76 && t % 80 < 80) beat = 10; // S
+            return (canvas.height / 1.5) + base + beat;
+        }
+
+        function drawLoop() {
+            // Hanya gambar jika dashboard terlihat (hemat resource)
+            if(document.getElementById('dashboard-view').style.display === 'block') {
+                dataPoints.shift();
+                dataPoints.push(generateECG(time));
+                time++;
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.beginPath();
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 2;
+                ctx.lineJoin = 'round';
+
+                for (let i = 0; i < dataPoints.length; i++) {
+                    if (i === 0) ctx.moveTo(i, dataPoints[i]);
+                    else ctx.lineTo(i, dataPoints[i]);
+                }
+                ctx.stroke();
+            }
+            requestAnimationFrame(drawLoop);
+        }
+        
+        // Init Canvas
+        resizeCanvas();
+        drawLoop();
+
+        // 3. SENSOR SIMULATION (Flex & MAX30102)
+        setInterval(() => {
+            if(document.getElementById('dashboard-view').style.display !== 'block') return;
+
+            // Update BPM & SpO2
+            const bpm = Math.floor(Math.random() * (75 - 68) + 68);
+            document.getElementById('bpmVal').innerText = bpm;
+            
+            const spo2 = Math.floor(Math.random() * (99 - 97) + 97);
+            document.getElementById('spo2Val').innerText = spo2 + "%";
+
+            // Update Flex Fingers (Random movement simulation)
+            for(let i=1; i<=5; i++) {
+                const val = Math.floor(Math.random() * 100);
+                const bar = document.getElementById('f'+i);
+                bar.style.height = val + "%";
+                
+                // Color change logic for Gamification
+                if(val > 80) bar.style.background = "#8b5cf6"; // Ungu (Target Hit)
+                else bar.style.background = "#00d4ff"; // Biru (Normal)
+            }
+        }, 1000); // Update tiap 1 detik
+
+    </script>
+</body>
+</html>

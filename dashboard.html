@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroRehab AI - Medical Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent-green: #10b981; /* ECG Color */
+            --accent-blue: #3b82f6; /* Oxygen/Flex */
+            --accent-red: #ef4444; /* Alert */
+            --accent-purple: #8b5cf6; /* Gamification */
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+        .status-badge {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .indicator { width: 10px; height: 10px; background: var(--accent-green); border-radius: 50%; animation: pulse 2s infinite; }
+
+        /* Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+            height: 100%;
+        }
+
+        /* Card Style */
+        .card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+        .card h3 { font-size: 1rem; color: var(--text-secondary); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Patient Info (Left) */
+        .patient-card { text-align: center; }
+        .avatar { width: 80px; height: 80px; background: #334155; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+        .patient-details { text-align: left; margin-top: 20px; font-size: 0.9rem; color: var(--text-secondary); }
+        .patient-details p { margin-bottom: 8px; border-bottom: 1px solid #334155; padding-bottom: 5px; }
+        .patient-details span { float: right; color: var(--text-primary); }
+
+        /* ECG Graph (Center Top) */
+        .ecg-container { grid-column: 2 / 3; position: relative; overflow: hidden; }
+        canvas { width: 100%; height: 200px; }
+        .bpm-overlay { position: absolute; top: 20px; right: 20px; text-align: right; }
+        .big-number { font-size: 3rem; font-weight: bold; color: var(--text-primary); }
+        .unit { font-size: 1rem; color: var(--text-secondary); }
+
+        /* Flex Sensors / Gamification (Center Bottom) */
+        .flex-container { grid-column: 2 / 3; }
+        .hand-visualizer { display: flex; justify-content: space-around; align-items: flex-end; height: 150px; }
+        .finger-group { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 15%; }
+        .progress-bar-bg { width: 100%; height: 120px; background: #334155; border-radius: 10px; position: relative; overflow: hidden; }
+        .progress-bar-fill { 
+            width: 100%; position: absolute; bottom: 0; background: linear-gradient(to top, var(--accent-blue), #60a5fa); 
+            transition: height 0.3s ease; border-radius: 10px; 
+        }
+        .finger-name { font-size: 0.8rem; color: var(--text-secondary); }
+
+        /* MAX30102 & AI (Right) */
+        .vitals-card { display: flex; justify-content: space-between; align-items: center; }
+        .vital-item { text-align: center; width: 48%; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; }
+        
+        .ai-analysis { margin-top: 20px; background: rgba(239, 68, 68, 0.1); border: 1px solid var(--accent-red); }
+        .ai-title { color: var(--accent-red); display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-weight: bold; }
+        
+        .game-stats { margin-top: 20px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.05)); border: 1px solid var(--accent-purple); }
+        .level-badge { background: var(--accent-purple); color: white; padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 0.8rem; }
+
+        /* Animation */
+        @keyframes pulse { 0% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { opacity: 0.7; box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+
+        @media (max-width: 900px) {
+            .dashboard-grid { grid-template-columns: 1fr; grid-template-rows: auto; }
+            .ecg-container, .flex-container { grid-column: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1 style="font-size: 1.5rem;">NeuroRehab <span style="color:var(--accent-blue)">Glove AI</span></h1>
+            <p style="font-size: 0.8rem; color: var(--text-secondary);">IoT Rehabilitation & Arrhythmia Detection System</p>
+        </div>
+        <div class="status-badge">
+            <div class="indicator"></div>
+            Device Connected (ESP32)
+        </div>
+    </header>
+
+    <div class="dashboard-grid">
+        
+        <div class="card patient-card">
+            <h3>Patient Profile</h3>
+            <div class="avatar">👨‍🦳</div>
+            <h2 style="margin-bottom: 5px;">Bpk. Hartono</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">ID: P-2025-001</p>
+            
+            <div class="patient-details">
+                <p>Age <span>68 Years</span></p>
+                <p>Condition <span>Post-Stroke</span></p>
+                <p>Therapy Day <span>#12</span></p>
+                <p>Risk Status <span style="color: var(--accent-red); font-weight: bold;">Moderate</span></p>
+            </div>
+        </div>
+
+        <div class="card ecg-container">
+            <h3>Live ECG Monitoring (AD8232)</h3>
+            <canvas id="ecgCanvas"></canvas>
+            <div class="bpm-overlay">
+                <div class="big-number" id="bpmValue" style="color: var(--accent-green);">72</div>
+                <div class="unit">BPM</div>
+            </div>
+        </div>
+
+        <div class="card flex-container">
+            <h3>Hand Movement & Flex Sensors</h3>
+            <div class="hand-visualizer">
+                <div class="finger-group">
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" id="flexThumb" style="height: 20%;"></div></div>
+                    <div class="finger-name">Thumb</div>
+                </div>
+                <div class="finger-group">
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" id="flexIndex" style="height: 50%;"></div></div>
+                    <div class="finger-name">Index</div>
+                </div>
+                <div class="finger-group">
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" id="flexMiddle" style="height: 80%;"></div></div>
+                    <div class="finger-name">Middle</div>
+                </div>
+                <div class="finger-group">
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" id="flexRing" style="height: 40%;"></div></div>
+                    <div class="finger-name">Ring</div>
+                </div>
+                <div class="finger-group">
+                    <div class="progress-bar-bg"><div class="progress-bar-fill" id="flexPinky" style="height: 10%;"></div></div>
+                    <div class="finger-name">Pinky</div>
+                </div>
+            </div>
+            <div style="margin-top: 15px; text-align: center; font-size: 0.9rem; color: var(--text-secondary);">
+                Current Exercise: <span style="color: var(--accent-blue); font-weight: bold;">Grip & Release</span>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            
+            <div class="card vitals-card">
+                <div class="vital-item">
+                    <h3 style="font-size: 0.8rem; margin-bottom: 5px;">SpO2 (MAX30102)</h3>
+                    <div class="big-number" id="spo2Value" style="font-size: 2rem; color: var(--accent-blue);">98%</div>
+                </div>
+                <div class="vital-item">
+                    <h3 style="font-size: 0.8rem; margin-bottom: 5px;">Temperature</h3>
+                    <div class="big-number" style="font-size: 2rem; color: orange;">36.5°</div>
+                </div>
+            </div>
+
+            <div class="card ai-analysis">
+                <div class="ai-title">
+                    ⚠️ AI Risk Detection
+                </div>
+                <p style="font-size: 0.9rem; line-height: 1.4;">
+                    Pola sinyal ECG stabil. Tidak terdeteksi tanda fibrilasi atrium (AFib) dalam 1 jam terakhir.
+                </p>
+                <div style="margin-top: 10px; font-size: 0.8rem; color: var(--text-secondary);">
+                    Confidence Score: 98.2%
+                </div>
+            </div>
+
+            <div class="card game-stats">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3 style="margin: 0; color: var(--accent-purple);">Gamification</h3>
+                    <span class="level-badge">LEVEL 5</span>
+                </div>
+                <p style="font-size: 0.9rem;">Total Score: <strong style="color: white;">1,250 XP</strong></p>
+                <div style="background: rgba(0,0,0,0.3); height: 8px; border-radius: 4px; margin-top: 5px;">
+                    <div style="width: 70%; height: 100%; background: var(--accent-purple); border-radius: 4px;"></div>
+                </div>
+                <p style="font-size: 0.8rem; margin-top: 5px; text-align: right;">Next Level: 70%</p>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- 1. SIMULASI GRAFIK ECG (AD8232) ---
+        const canvas = document.getElementById('ecgCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Resize canvas
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+
+        let dataPoints = new Array(canvas.width).fill(canvas.height / 2);
+        let xPos = 0;
+
+        // Fungsi membuat pola gelombang jantung sederhana
+        function generateECGPoint(t) {
+            // Kombinasi gelombang sinus untuk meniru PQRST wave
+            let base = Math.sin(t * 0.1) * 5; 
+            let beat = 0;
+            
+            // Simulasi detak (QRS complex) setiap periode tertentu
+            if (t % 80 > 70 && t % 80 < 76) { 
+                beat = (Math.random() * -80) + 40; // R peak (naik tajam)
+            } else if (t % 80 > 65 && t % 80 <= 70) {
+                beat = 15; // Q dip
+            } else if (t % 80 > 76 && t % 80 < 80) {
+                beat = 10; // S dip
+            }
+
+            return (canvas.height / 2) + base + beat + (Math.random() * 2); // +noise
+        }
+
+        let time = 0;
+        function drawECG() {
+            // Geser data ke kiri
+            dataPoints.shift();
+            dataPoints.push(generateECGPoint(time));
+            time++;
+
+            // Clear & Redraw
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.beginPath();
+            ctx.strokeStyle = '#10b981'; // Warna Hijau Medis
+            ctx.lineWidth = 2;
+            ctx.lineJoin = 'round';
+
+            for (let i = 0; i < dataPoints.length; i++) {
+                if (i === 0) ctx.moveTo(i, dataPoints[i]);
+                else ctx.lineTo(i, dataPoints[i]);
+            }
+            ctx.stroke();
+            requestAnimationFrame(drawECG);
+        }
+        drawECG();
+
+        // --- 2. SIMULASI MAX30102 (BPM & SpO2) ---
+        function updateVitals() {
+            // Randomize BPM (60 - 90)
+            const bpm = Math.floor(Math.random() * (90 - 65 + 1) + 65);
+            document.getElementById('bpmValue').innerText = bpm;
+
+            // Randomize SpO2 (96 - 99)
+            const spo2 = Math.floor(Math.random() * (99 - 96 + 1) + 96);
+            document.getElementById('spo2Value').innerText = spo2 + "%";
+        }
+        setInterval(updateVitals, 2000); // Update tiap 2 detik
+
+        // --- 3. SIMULASI FLEX SENSOR (GAMIFIKASI) ---
+        function updateFlexSensors() {
+            const fingers = ['flexThumb', 'flexIndex', 'flexMiddle', 'flexRing', 'flexPinky'];
+            
+            fingers.forEach(id => {
+                // Simulasi gerakan acak 0% - 100%
+                const value = Math.floor(Math.random() * 100);
+                document.getElementById(id).style.height = value + "%";
+                
+                // Ubah warna jika 'menggenggam' kuat (nilai tinggi)
+                if(value > 80) {
+                    document.getElementById(id).style.background = "#8b5cf6"; // Ungu (Gamifikasi hit)
+                } else {
+                    document.getElementById(id).style.background = "linear-gradient(to top, #3b82f6, #60a5fa)"; // Biru normal
+                }
+            });
+        }
+        setInterval(updateFlexSensors, 1000); // Update gerak jari tiap 1 detik
+
+    </script>
+</body>
+</html>

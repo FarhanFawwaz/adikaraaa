@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "MAX30102",
+			"path": "MAX30102"
+		}
+	],
+	"settings": {}
+}

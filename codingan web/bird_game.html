@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Burung Terbang - Game Rehabilitasi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        /* Header Game */
+        .game-header {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 100;
+        }
+
+        .score-display {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #333;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .xp-display {
+            background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: white;
+            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Canvas */
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Flex Sensor Indicator */
+        .flex-indicator {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            z-index: 100;
+        }
+
+        .flex-bars {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .flex-bar {
+            width: 30px;
+            height: 80px;
+            background: #333;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flex-fill {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background: linear-gradient(to top, #3b82f6, #60a5fa);
+            transition: height 0.2s;
+        }
+
+        /* Start Screen */
+        .start-screen,
+        .game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            color: white;
+        }
+
+        .start-screen h1,
+        .game-over-screen h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .start-screen p,
+        .game-over-screen p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            text-align: center;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            padding: 12px 25px;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            /* Added for visibility */
+            border-radius: 50px;
+            /* Added for consistency with other buttons */
+            font-weight: bold;
+            /* Added for consistency with other buttons */
+            transition: transform 0.2s, box-shadow 0.2s;
+            /* Added for smooth transition */
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .back-button::before {
+            content: "←";
+            font-size: 1.2rem;
+        }
+
+        .instruction {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* XP Popup */
+        .xp-popup {
+            position: absolute;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #8b5cf6;
+            animation: floatUp 1s ease-out forwards;
+            pointer-events: none;
+            z-index: 150;
+        }
+
+        @keyframes floatUp {
+            from {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+        }
+
+        /* Status Connection */
+        .connection-status {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(239, 68, 68, 0.9);
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: white;
+            font-size: 0.85rem;
+            z-index: 100;
+        }
+
+        .connection-status.connected {
+            background: rgba(16, 185, 129, 0.9);
+        }
+
+        /* Keyboard Controls Indicator */
+        .keyboard-controls {
+            position: absolute;
+            bottom: 120px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            color: white;
+            z-index: 100;
+            font-size: 0.85rem;
+        }
+
+        .keyboard-controls h4 {
+            margin-bottom: 10px;
+            color: #a78bfa;
+            font-size: 0.9rem;
+        }
+
+        .key-hint {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .key-button {
+            background: #334155;
+            padding: 5px 12px;
+            border-radius: 5px;
+            font-weight: bold;
+            min-width: 50px;
+            text-align: center;
+            border: 2px solid #475569;
+            transition: all 0.2s;
+        }
+
+        .key-button.active {
+            background: #8b5cf6;
+            border-color: #a78bfa;
+            transform: scale(0.95);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .game-container {
+                height: 100vh;
+                max-width: 100%;
+                border-radius: 0;
+            }
+
+            .game-header {
+                padding: 0 15px;
+                flex-wrap: wrap;
+            }
+
+            .score-display,
+            .xp-display {
+                font-size: 0.9rem;
+                padding: 8px 15px;
+            }
+
+            .connection-status {
+                font-size: 0.75rem;
+                padding: 6px 12px;
+                top: 10px;
+            }
+
+            .flex-indicator {
+                bottom: 10px;
+                left: 10px;
+                padding: 10px;
+            }
+
+            .flex-bar {
+                width: 25px;
+                height: 60px;
+            }
+
+            .keyboard-controls {
+                bottom: 80px;
+                right: 10px;
+                padding: 10px;
+                font-size: 0.75rem;
+            }
+
+            .key-button {
+                min-width: 40px;
+                padding: 4px 8px;
+                font-size: 0.75rem;
+            }
+
+            .start-screen h1,
+            .game-over-screen h1 {
+                font-size: 2rem;
+            }
+
+            .start-screen p,
+            .game-over-screen p {
+                font-size: 1rem;
+                padding: 0 20px;
+            }
+
+            .instruction {
+                font-size: 0.85rem;
+                padding: 12px;
+            }
+
+            button {
+                font-size: 0.95rem;
+                padding: 12px 30px;
+            }
+
+            .back-button {
+                font-size: 0.8rem;
+                padding: 10px 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-header {
+                gap: 10px;
+            }
+
+            .score-display,
+            .xp-display {
+                font-size: 0.8rem;
+                padding: 6px 12px;
+            }
+
+            .flex-indicator {
+                transform: scale(0.9);
+                transform-origin: bottom left;
+            }
+
+            .keyboard-controls {
+                transform: scale(0.85);
+                transform-origin: bottom right;
+            }
+
+            .start-screen h1,
+            .game-over-screen h1 {
+                font-size: 1.5rem;
+            }
+
+            .instruction {
+                font-size: 0.75rem;
+            }
+        }
+
+        @media (orientation: landscape) and (max-height: 500px) {
+
+            .flex-indicator,
+            .keyboard-controls {
+                display: none;
+            }
+
+            .start-screen h1,
+            .game-over-screen h1 {
+                font-size: 1.5rem;
+                margin-bottom: 10px;
+            }
+
+            .start-screen p,
+            .game-over-screen p {
+                font-size: 0.85rem;
+                margin-bottom: 15px;
+            }
+
+            .instruction {
+                padding: 8px;
+                font-size: 0.7rem;
+            }
+
+            button {
+                padding: 8px 20px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="game-container">
+        <div id="connectionStatus" class="connection-status">Menghubungkan...</div>
+
+        <!-- Header dengan Score dan XP -->
+        <div class="game-header">
+            <div class="score-display">
+                Jarak: <span id="score">0</span>m
+            </div>
+            <div class="xp-display">
+                XP: <span id="xp">0</span>
+            </div>
+        </div>
+
+        <!-- Canvas Game -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Flex Sensor Indicator -->
+        <div class="flex-indicator">
+            <div style="font-size: 0.9rem; margin-bottom: 5px;">Flex Sensors</div>
+            <div class="flex-bars">
+                <div class="flex-bar">
+                    <div class="flex-fill" id="flexBar0" style="height: 0%;"></div>
+                </div>
+                <div class="flex-bar">
+                    <div class="flex-fill" id="flexBar1" style="height: 0%;"></div>
+                </div>
+                <div class="flex-bar">
+                    <div class="flex-fill" id="flexBar2" style="height: 0%;"></div>
+                </div>
+                <div class="flex-bar">
+                    <div class="flex-fill" id="flexBar3" style="height: 0%;"></div>
+                </div>
+                <div class="flex-bar">
+                    <div class="flex-fill" id="flexBar4" style="height: 0%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keyboard Controls Indicator -->
+        <div class="keyboard-controls">
+            <h4>⌨️ Kontrol Keyboard</h4>
+            <div class="key-hint">
+                <div class="key-button" id="keySpace">SPACE</div>
+                <span>Terbang</span>
+            </div>
+            <div class="key-hint">
+                <div class="key-button" id="keyUp">↑</div>
+                <span>Terbang</span>
+            </div>
+            <div class="key-hint">
+                <div class="key-button" id="keyW">W</div>
+                <span>Terbang</span>
+            </div>
+            <p style="margin-top: 10px; font-size: 0.75rem; color: #94a3b8;">Gunakan untuk testing tanpa sensor</p>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="startScreen" class="start-screen">
+            <h1>🐦 Burung Terbang</h1>
+            <p>Game rehabilitasi yang dikontrol oleh flex sensor pada sarung tangan NeuroRehab. Tekuk jari Anda untuk
+                membuat burung terbang naik!</p>
+            <div class="instruction">
+                <strong>📋 Cara Bermain:</strong><br>
+                • <strong>Dengan Sensor:</strong> Tekuk jari (flex sensor naik) → Burung terbang<br>
+                • <strong>Dengan Keyboard:</strong> Tekan Space / ↑ / W → Burung terbang<br>
+                • Jari lurus (flex sensor turun) → Burung jatuh<br>
+                • Hindari rintangan untuk mendapat XP<br>
+                • Latih motorik dengan gerakan repetitif!
+            </div>
+            <button id="startButton" style="margin-top: 30px;">Mulai Game</button>
+            <a href="index.html" class="back-button">Kembali ke Beranda</a>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen" class="game-over-screen hidden">
+            <h1>Game Over!</h1>
+            <p style="font-size: 1.5rem;">Jarak: <span id="finalScore">0</span>m</p>
+            <p style="font-size: 1.5rem; color: #a78bfa;">Total XP: <span id="finalXP">0</span></p>
+            <p>Gerakan sempurna: <span id="perfectMoves">0</span> kali</p>
+            <button id="restartButton">Main Lagi</button>
+            <a href="index.html" class="back-button">Kembali ke Beranda</a>
+        </div>
+    </div>
+
+    <!-- WebSocket Client -->
+    <script src="websocket_client.js"></script>
+    <script>
+        // Game Constants
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 800;
+        canvas.height = 600;
+
+        // Game State
+        let gameActive = false;
+        let score = 0;
+        let xp = 0;
+        let perfectMoves = 0;
+        let lastFlexValue = 0;
+        let currentFlexAvg = 0;
+
+        // Bird Properties
+        const bird = {
+            x: 150,
+            y: canvas.height / 2,
+            width: 40,
+            height: 40,
+            velocity: 0,
+            gravity: 0.4,
+            liftPower: -8,
+            maxVelocity: 10
+        };
+
+        // Obstacles
+        let obstacles = [];
+        const obstacleWidth = 60;
+        const obstacleGap = 200;
+        let frameCount = 0;
+
+        // Flex Sensor Values (0-100)
+        let flexValues = [0, 0, 0, 0, 0];
+
+        // WebSocket Integration
+        const wsClient = new NeuroRehabWebSocket('ws://localhost:8080');
+        let usingWebSocket = false;
+
+        wsClient.onConnected = () => {
+            document.getElementById('connectionStatus').innerText = '✓ Terhubung dengan Sensor';
+            document.getElementById('connectionStatus').classList.add('connected');
+            usingWebSocket = true;
+        };
+
+        wsClient.onDisconnected = () => {
+            document.getElementById('connectionStatus').innerText = '⚠ Mode Simulasi';
+            document.getElementById('connectionStatus').classList.remove('connected');
+            usingWebSocket = false;
+        };
+
+        wsClient.onFlexData = (data) => {
+            if (data.values) {
+                flexValues = [
+                    data.values.thumb,
+                    data.values.index,
+                    data.values.middle,
+                    data.values.ring,
+                    data.values.pinky
+                ];
+                updateFlexIndicator();
+            }
+        };
+
+        window.addEventListener('load', () => {
+            wsClient.connect();
+        });
+
+        // Update Flex Indicator
+        function updateFlexIndicator() {
+            flexValues.forEach((val, idx) => {
+                const bar = document.getElementById(`flexBar${idx}`);
+                if (bar) {
+                    bar.style.height = val + '%';
+                    if (val > 70) {
+                        bar.style.background = 'linear-gradient(to top, #8b5cf6, #a78bfa)';
+                    } else {
+                        bar.style.background = 'linear-gradient(to top, #3b82f6, #60a5fa)';
+                    }
+                }
+            });
+
+            // Hitung rata-rata flex untuk kontrol burung
+            currentFlexAvg = flexValues.reduce((a, b) => a + b, 0) / flexValues.length;
+        }
+
+        // Simulasi Flex (jika tidak ada WebSocket)
+        function simulateFlex() {
+            if (!usingWebSocket) {
+                flexValues = flexValues.map(() => Math.random() * 100);
+                updateFlexIndicator();
+            }
+        }
+        setInterval(simulateFlex, 1000);
+
+        // Game Functions
+        function startGame() {
+            document.getElementById('startScreen').classList.add('hidden');
+            gameActive = true;
+            score = 0;
+            xp = 0;
+            perfectMoves = 0;
+            bird.y = canvas.height / 2;
+            bird.velocity = 0;
+            obstacles = [];
+            frameCount = 0;
+            lastFlexValue = currentFlexAvg;
+            gameLoop();
+        }
+
+        function gameLoop() {
+            if (!gameActive) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Sky with clouds
+            drawBackground();
+
+            // Update Bird berdasarkan Flex Sensor
+            const flexChange = Math.abs(currentFlexAvg - lastFlexValue);
+
+            if (flexChange > 10) { // Jika ada pergerakan jari
+                bird.velocity += bird.liftPower;
+                showXPPopup('+5 XP', bird.x, bird.y);
+                xp += 5;
+                perfectMoves++;
+            } else {
+                // Jari diam, burung jatuh
+                bird.velocity += bird.gravity;
+            }
+
+            lastFlexValue = currentFlexAvg;
+
+            // Limit velocity
+            bird.velocity = Math.max(-bird.maxVelocity, Math.min(bird.velocity, bird.maxVelocity));
+            bird.y += bird.velocity;
+
+            // Draw Bird
+            drawBird();
+
+            // Generate Obstacles
+            if (frameCount % 90 === 0) {
+                const gapY = Math.random() * (canvas.height - obstacleGap - 100) + 50;
+                obstacles.push({
+                    x: canvas.width,
+                    topHeight: gapY,
+                    bottomY: gapY + obstacleGap
+                });
+            }
+
+            // Update & Draw Obstacles
+            obstacles = obstacles.filter(obs => {
+                obs.x -= 3;
+
+                // Draw obstacle
+                ctx.fillStyle = '#2d6a4f';
+                ctx.fillRect(obs.x, 0, obstacleWidth, obs.topHeight);
+                ctx.fillRect(obs.x, obs.bottomY, obstacleWidth, canvas.height - obs.bottomY);
+
+                // Collision Detection
+                if (
+                    bird.x + bird.width > obs.x &&
+                    bird.x < obs.x + obstacleWidth &&
+                    (bird.y < obs.topHeight || bird.y + bird.height > obs.bottomY)
+                ) {
+                    endGame();
+                }
+
+                // Score when passing obstacle
+                if (obs.x + obstacleWidth < bird.x && !obs.passed) {
+                    obs.passed = true;
+                    score += 10;
+                    xp += 20;
+                }
+
+                return obs.x > -obstacleWidth;
+            });
+
+            // Check if bird hits ground/ceiling
+            if (bird.y < 0 || bird.y + bird.height > canvas.height) {
+                endGame();
+            }
+
+            // Update UI
+            document.getElementById('score').innerText = score;
+            document.getElementById('xp').innerText = xp;
+
+            frameCount++;
+            requestAnimationFrame(gameLoop);
+        }
+
+        function drawBackground() {
+            // Clouds
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            ctx.beginPath();
+            ctx.arc(100 + (frameCount % 800), 100, 40, 0, Math.PI * 2);
+            ctx.arc(500 + (frameCount % 800), 150, 50, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawBird() {
+            // Simple bird representation
+            ctx.save();
+            ctx.translate(bird.x + bird.width / 2, bird.y + bird.height / 2);
+            const angle = Math.min(Math.max(bird.velocity * 0.05, -0.5), 0.5);
+            ctx.rotate(angle);
+
+            // Body
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(0, 0, 20, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Wing
+            ctx.fillStyle = '#FFA500';
+            ctx.beginPath();
+            ctx.ellipse(-10, 0, 15, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Eye
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(8, -5, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Beak
+            ctx.fillStyle = '#FF6347';
+            ctx.beginPath();
+            ctx.moveTo(15, 0);
+            ctx.lineTo(25, -3);
+            ctx.lineTo(25, 3);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function showXPPopup(text, x, y) {
+            const popup = document.createElement('div');
+            popup.className = 'xp-popup';
+            popup.innerText = text;
+            popup.style.left = x + 'px';
+            popup.style.top = y + 'px';
+            document.querySelector('.game-container').appendChild(popup);
+
+            setTimeout(() => popup.remove(), 1000);
+        }
+
+        function endGame() {
+            gameActive = false;
+            document.getElementById('finalScore').innerText = score;
+            document.getElementById('finalXP').innerText = xp;
+            document.getElementById('perfectMoves').innerText = perfectMoves;
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+
+            // Save XP to localStorage
+            const savedXP = parseInt(localStorage.getItem('totalXP') || '0');
+            localStorage.setItem('totalXP', savedXP + xp);
+        }
+
+        // Event Listeners
+        document.getElementById('startButton').addEventListener('click', startGame);
+        document.getElementById('restartButton').addEventListener('click', () => {
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            startGame();
+        });
+
+        // Keyboard control untuk testing
+        document.addEventListener('keydown', (e) => {
+            if (!gameActive) return;
+
+            let keyPressed = false;
+            let keyId = null;
+
+            // Deteksi key yang ditekan
+            if (e.code === 'Space') {
+                e.preventDefault(); // Prevent page scroll
+                keyPressed = true;
+                keyId = 'keySpace';
+            } else if (e.code === 'ArrowUp') {
+                e.preventDefault();
+                keyPressed = true;
+                keyId = 'keyUp';
+            } else if (e.code === 'KeyW') {
+                keyPressed = true;
+                keyId = 'keyW';
+            }
+
+            if (keyPressed) {
+                // Simulasi gerakan burung
+                bird.velocity = bird.liftPower;
+                xp += 5;
+
+                // Visual feedback pada tombol
+                const keyElement = document.getElementById(keyId);
+                if (keyElement) {
+                    keyElement.classList.add('active');
+                    setTimeout(() => keyElement.classList.remove('active'), 200);
+                }
+
+                // Tampilkan XP popup
+                showXPPopup('+5 XP', bird.x + 50, bird.y - 20);
+            }
+        });
+    </script>
+</body>
+
+</html>

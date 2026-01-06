@@ -1,111 +1,69 @@
 #include <Arduino.h>
-#include <Wire.h>
-#include "MAX30105.h"
-#include "heartRate.h"
 
-// --- Definisi Pin AD8232 (ECG) ---
-// CATATAN: Pin 19 pada beberapa board ESP32 bukan pin ADC yang ideal. 
-// Jika grafik ECG garis lurus, ganti ke GPIO 32, 33, 34, atau 35.
-#ifdef ESP32
-  const int AD8232_PIN = 25; // SAYA SARANKAN PIN 32 (ADC1) DARIPADA 19
-  const int LO_PLUS = 32;
-  const int LO_MINUS =33;
-  
-  // Definisi Pin I2C ESP32
-  const int I2C_SDA_PIN = 35; 
-  const int I2C_SCL_PIN = 34;
-#else
-  const int AD8232_PIN = A0;
-  const int LO_PLUS = 10;
-  const int LO_MINUS = 11;
-#endif
+// ==========================================
+// KONFIGURASI PIN (FINAL)
+// ==========================================
 
-MAX30105 particleSensor;
+// 1. PIN ECG (AD8232)
+// Output sensor masuk ke GPIO 4
+const int ECG_PIN = 4;      
 
-const byte RATE_SIZE = 4; 
-byte rates[RATE_SIZE]; 
-byte rateSpot = 0;
-long lastBeat = 0; 
-float beatsPerMinute;
-int beatAvg;
+// Pin Deteksi Lepas (Leads Off)
+// LO+ ke GPIO 19, LO- ke GPIO 18
+const int LO_PLUS = 19;
+const int LO_MINUS = 18;
+
+// 2. PIN FLEX SENSOR
+// Output rangkaian pembagi tegangan masuk ke GPIO 15
+const int FLEX_PIN = 15;    
 
 void setup() {
+  // Wajib 115200 agar Teleplot lancar
   Serial.begin(115200);
-  Serial.println("Inisialisasi Sensor...");
-
+  
+  // Konfigurasi Pin Digital untuk deteksi kabel lepas
   pinMode(LO_PLUS, INPUT);
   pinMode(LO_MINUS, INPUT);
-
-  // --- PERBAIKAN UTAMA DISINI ---
-  // Kita paksa ESP32 menggunakan pin 21 dan 22
-  #ifdef ESP32
-    Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
-  #else
-    Wire.begin();
-  #endif
   
-  // Beri sedikit waktu agar power sensor stabil
-  delay(100);
-
-  // Gunakan Wire yang sudah di-init di atas
-  if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) {
-    Serial.println("MAX30102 tidak ditemukan. Cek wiring/daya!");
-    Serial.println("Device ditemukan di I2C tapi MAX30102 tidak respond.");
-    Serial.println("Kemungkinan:");
-    Serial.println("- Sensor rusak atau address salah");
-    Serial.println("- Pin SDA/SCL terbalik");
-    Serial.println("- Tegangan power tidak stabil");
-    // Loop error blink atau pesan berulang agar user sadar
-    while (1) {
-      Serial.println("Error: Sensor I2C Error 263 / Not Found");
-      delay(1000);
-    }
-  }
+  // Pin Analog (4 dan 15) tidak perlu disetting pinMode-nya
   
-  Serial.println("MAX30102 Ditemukan!");
-  
-  particleSensor.setup(); 
-  particleSensor.setPulseAmplitudeRed(0x0A); 
-  particleSensor.setPulseAmplitudeGreen(0); 
+  Serial.println("System Ready: Mulai Membaca Data...");
 }
 
 void loop() {
-  long irValue = particleSensor.getIR();
-
-  if (irValue > 50000) {
-    if (checkForBeat(irValue) == true) {
-      long delta = millis() - lastBeat;
-      lastBeat = millis();
-
-      beatsPerMinute = 60 / (delta / 1000.0);
-
-      if (beatsPerMinute < 255 && beatsPerMinute > 20) {
-        rates[rateSpot++] = (byte)beatsPerMinute; 
-        rateSpot %= RATE_SIZE; 
-
-        beatAvg = 0;
-        for (byte x = 0 ; x < RATE_SIZE ; x++)
-          beatAvg += rates[x];
-        beatAvg /= RATE_SIZE;
-      }
-    }
-  } else {
-    beatAvg = 0; 
-  }
-
+  // --- BAGIAN 1: BACA SENSOR ECG ---
   int ecgValue = 0;
+  
+  // Cek logika Leads Off (Kabel Lepas)
+  // Jika Pin 19 ATAU 18 bernilai 1, berarti pad tidak nempel di kulit
   if ((digitalRead(LO_PLUS) == 1) || (digitalRead(LO_MINUS) == 1)) {
-    ecgValue = 512; 
+    // Kunci nilai di tengah (2048) agar grafik jadi garis lurus
+    ecgValue = 2048; 
   } else {
-    ecgValue = analogRead(AD8232_PIN);
+    // Jika nempel, baca sinyal jantung sebenarnya
+    ecgValue = analogRead(ECG_PIN); 
   }
 
-  Serial.print("ECG:");
-  Serial.print(ecgValue);
-  Serial.print(",");
-  Serial.print("BPM:");
-  Serial.print(beatAvg);
-  Serial.println();
+  // --- BAGIAN 2: BACA FLEX SENSOR ---
+  // Baca kelengkungan jari dari Pin 15
+  int flexValue = analogRead(FLEX_PIN);
+
+  // --- BAGIAN 3: KIRIM KE TELEPLOT ---
+  // Format Wajib Teleplot: ">NamaVariabel:Nilai"
   
-  delay(20); 
+  // Kirim data ECG (Grafik 1)
+  Serial.print(">ECG:");
+  Serial.println(ecgValue);
+  
+  // Kirim data Flex (Grafik 2)
+  Serial.print(">FLEX:");
+  Serial.println(flexValue);
+
+  // --- PENGATURAN KECEPATAN ---
+  // Sebelumnya: delay(10); -> Terlalu cepat
+  // Sekarang: delay(30);   -> Sedang (Aman untuk ECG)
+  
+  // CATATAN: Jangan ubah ini lebih besar dari 50, 
+  // nanti grafik detak jantung jadi hilang puncaknya.
+  delay(1000); 
 }

@@ -14,6 +14,7 @@ import time
 
 # Port server
 PORT = 8080
+HOST = "0.0.0.0"  # Allow connections from any IP (termasuk dari React dev server)
 
 # Simulasi data global
 ecg_time = 0
@@ -92,7 +93,7 @@ async def send_data(websocket):
     except Exception as e:
         print(f"[Server] Error: {e}")
 
-async def handle_client(websocket, path):
+async def handle_client(websocket):
     """Handle koneksi client baru"""
     client_address = websocket.remote_address
     print(f"[Server] ✓ Client terhubung: {client_address}")
@@ -120,13 +121,14 @@ async def main():
     print("=" * 60)
     print("  NeuroRehab WebSocket Mock Server")
     print("=" * 60)
+    print(f"  Host: {HOST}")
     print(f"  Port: {PORT}")
     print(f"  URL: ws://localhost:{PORT}")
     print(f"  Status: RUNNING ✓")
     print("=" * 60)
     print("\nTekan Ctrl+C untuk berhenti\n")
     
-    async with websockets.serve(handle_client, "localhost", PORT):
+    async with websockets.serve(handle_client, HOST, PORT):
         await asyncio.Future()  # run forever
 
 if __name__ == "__main__":

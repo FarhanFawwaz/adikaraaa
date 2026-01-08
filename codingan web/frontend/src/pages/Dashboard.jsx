@@ -11,31 +11,10 @@ export const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-dark text-white p-6">
-      {/* ...existing header code... */}
-      <header className="flex justify-between items-center mb-8 bg-card-dark p-6 rounded-2xl shadow-lg border border-slate-800">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          NeuroRehab AI - Medical Dashboard
-        </h1>
-        <div
-          className={`flex items-center gap-2 px-4 py-2 rounded-full border ${
-            isConnected
-              ? "bg-green-500/10 text-green-500 border-green-500/20"
-              : "bg-red-500/10 text-red-500 border-red-500/20"
-          }`}
-        >
-          <span
-            className={`w-2 h-2 rounded-full ${
-              isConnected ? "bg-green-500" : "bg-red-500"
-            }`}
-          ></span>
-          <span className="font-medium text-sm">
-            {isConnected ? "Connected" : "Disconnected"}
-          </span>
-        </div>
-      </header>
+      
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 auto-rows-min">
-        {/* Left Column - Patient Info & Vitals */}
+        {/* Left Column - Patient Info */}
         <div className="lg:col-span-1 space-y-6">
           {/* Patient Info Card */}
           <div className="bg-card-dark p-6 rounded-2xl shadow-lg border border-slate-800">
@@ -73,16 +52,39 @@ export const Dashboard = () => {
             </div>
           </div>
 
-          {/* AIPredictionCard dipindah ke sini */}
-          <AIPredictionCard predictionData={predictionData} />
+          {/* Flex Sensors - di bawah Patient Info */}
+          <div className="bg-card-dark p-6 rounded-2xl shadow-lg border border-slate-800">
+            <h3 className="text-lg font-semibold text-slate-300 mb-4 flex items-center gap-2">
+              <span className="w-1 h-6 bg-accent rounded-full"></span>
+              Flex Sensor Analytics
+            </h3>
+            <FlexSensors flexData={flexData} isConnected={isConnected} />
+          </div>
         </div>
-
         {/* Center - ECG */}
         <div className="lg:col-span-2 bg-card-dark p-6 rounded-2xl shadow-lg border border-slate-800 min-h-[500px] flex flex-col">
-          <h3 className="text-lg font-semibold text-slate-300 mb-4 flex items-center gap-2">
-            <span className="w-1 h-6 bg-primary rounded-full"></span>
-            ECG Monitor (AD8232)
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-slate-300 flex items-center gap-2">
+              <span className="w-1 h-6 bg-primary rounded-full"></span>
+              ECG Monitor (AD8232)
+            </h3>
+            <div
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs ${
+                isConnected
+                  ? "bg-green-500/10 text-green-500 border-green-500/20"
+                  : "bg-red-500/10 text-red-500 border-red-500/20"
+              }`}
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  isConnected ? "bg-green-500" : "bg-red-500"
+                }`}
+              ></span>
+              <span className="font-medium">
+                {isConnected ? "Connected" : "Disconnected"}
+              </span>
+            </div>
+          </div>
           <div className="flex-1 bg-slate-900/50 rounded-xl overflow-hidden border border-slate-800 relative">
             <div className="absolute inset-0 grid grid-cols-[repeat(20,1fr)] grid-rows-[repeat(10,1fr)] opacity-20 pointer-events-none">
               {Array.from({ length: 200 }).map((_, i) => (
@@ -92,36 +94,32 @@ export const Dashboard = () => {
             <ECGChart ecgData={ecgData} isConnected={isConnected} />
           </div>
         </div>
-
-        {/* Right - Vitals & Stats */}
+        {/* Right - Vitals */}
         <div className="lg:col-span-1 space-y-6">
           <VitalsCard vitalsData={vitalsData} isConnected={isConnected} />
 
-          {/* Card tambahan untuk statistik sesi jika perlu */}
-          <div className="bg-card-dark p-6 rounded-2xl shadow-lg border border-slate-800">
-            <h3 className="text-md font-semibold text-slate-300 mb-4">
-              Session Stats
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-slate-800/50 p-3 rounded-xl text-center">
-                <div className="text-2xl font-bold text-blue-400">12m</div>
-                <div className="text-xs text-slate-500">Duration</div>
-              </div>
-              <div className="bg-slate-800/50 p-3 rounded-xl text-center">
-                <div className="text-2xl font-bold text-green-400">Good</div>
-                <div className="text-xs text-slate-500">Signal Quality</div>
+          {/* AI Diagnosis & Session Stats - di bawah Vitals */}
+          <div className="grid grid-cols-1 gap-6">
+            <div className="bg-card-dark py-12 rounded-2xl shadow-lg border border-slate-800">
+              <AIPredictionCard predictionData={predictionData} />
+            </div>
+
+            <div className="bg-card-dark p-6 rounded-2xl shadow-lg border border-slate-800">
+              <h3 className="text-md font-semibold text-slate-300 mb-4">
+                Session Stats
+              </h3>
+              <div className="space-x-10 flex">
+                <div className="bg-slate-800/50 p-3 rounded-xl">
+                  <div className="text-2xl font-bold text-green-400">Good</div>
+                  <div className="text-xs text-slate-500">Signal Quality</div>
+                </div>
+                <div className="bg-slate-800/50 p-3 rounded-xl">
+                  <div className="text-2xl font-bold text-blue-400">12m</div>
+                  <div className="text-xs text-slate-500">Duration</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Bottom - Flex Sensors */}
-        <div className="lg:col-span-4 bg-card-dark p-6 rounded-2xl shadow-lg border border-slate-800">
-          <h3 className="text-lg font-semibold text-slate-300 mb-4 flex items-center gap-2">
-            <span className="w-1 h-6 bg-accent rounded-full"></span>
-            Flex Sensor Analytics
-          </h3>
-          <FlexSensors flexData={flexData} isConnected={isConnected} />
         </div>
       </div>
     </div>

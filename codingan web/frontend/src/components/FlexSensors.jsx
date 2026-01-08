@@ -110,16 +110,11 @@ export const FlexSensors = ({ flexData, isConnected }) => {
 
   return (
     <div className="bg-card-dark rounded-xl p-5 border border-white/5 h-full">
-      <h3 className="text-slate-400 text-base mb-5 uppercase tracking-wider font-semibold">
-        Flex Sensors
-      </h3>
+     
       <div className="flex justify-around gap-4">
         {fingerNames.map(({ key, label }) => (
           <div key={key} className="text-center flex-1">
-            <div className="mb-2 font-semibold text-base text-slate-300">
-              {label}
-            </div>
-            <div className="w-full h-36 bg-dark rounded-lg flex items-end overflow-hidden relative">
+            <div className="w-full h-64 bg-dark rounded-lg flex items-end overflow-hidden relative">
               <div
                 className={`w-full transition-all duration-300 rounded-t-lg ${
                   fingers[key] > 80

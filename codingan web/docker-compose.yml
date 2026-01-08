@@ -21,6 +21,9 @@ services:
       target: frontend
     working_dir: /app/frontend
     command: ["npm", "run", "dev", "--", "--host"]
+    volumes:
+      - ./frontend:/app/frontend
+      - /app/frontend/node_modules
     ports:
       - "5173:5173"
     environment:

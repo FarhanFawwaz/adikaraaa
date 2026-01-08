@@ -2,13 +2,16 @@ import { useWebSocket } from "../hooks/useWebSocket";
 import { ECGChart } from "../components/ECGChart";
 import { VitalsCard } from "../components/VitalsCard";
 import { FlexSensors } from "../components/FlexSensors";
-// Removed CSS import as we are using Tailwind
+import { AIPredictionCard } from "../components/AIPredictionCard"; // Import baru
 
 export const Dashboard = () => {
-  const { isConnected, ecgData, flexData, vitalsData } = useWebSocket();
+  // Tambahkan predictionData
+  const { isConnected, ecgData, flexData, vitalsData, predictionData } =
+    useWebSocket();
 
   return (
     <div className="min-h-screen bg-dark text-white p-6">
+      {/* ...existing header code... */}
       <header className="flex justify-between items-center mb-8 bg-card-dark p-6 rounded-2xl shadow-lg border border-slate-800">
         <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
           NeuroRehab AI - Medical Dashboard
@@ -32,43 +35,50 @@ export const Dashboard = () => {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 auto-rows-min">
-        {/* Left Column - Patient Info */}
-        <div className="lg:col-span-1 bg-card-dark p-6 rounded-2xl shadow-lg border border-slate-800 h-fit">
-          <div className="flex flex-col items-center mb-6">
-            <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-4 border border-slate-700">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-10 h-10 text-slate-400"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
-                  clipRule="evenodd"
-                />
-              </svg>
+        {/* Left Column - Patient Info & Vitals */}
+        <div className="lg:col-span-1 space-y-6">
+          {/* Patient Info Card */}
+          <div className="bg-card-dark p-6 rounded-2xl shadow-lg border border-slate-800">
+            {/* ...existing patient info content... */}
+            <div className="flex flex-col items-center mb-6">
+              <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mb-4 border border-slate-700">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-10 h-10 text-slate-400"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M7.5 6a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM3.751 20.105a8.25 8.25 0 0116.498 0 .75.75 0 01-.437.695A18.683 18.683 0 0112 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 01-.437-.695z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-slate-200">Patient Name</h2>
             </div>
-            <h2 className="text-xl font-bold text-slate-200">Patient Name</h2>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center p-3 bg-slate-800/50 rounded-xl">
+                <span className="text-slate-400 text-sm">ID:</span>
+                <strong className="text-slate-200">P-2025-001</strong>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-slate-800/50 rounded-xl">
+                <span className="text-slate-400 text-sm">Age:</span>
+                <strong className="text-slate-200">45 Years</strong>
+              </div>
+              <div className="flex justify-between items-center p-3 bg-slate-800/50 rounded-xl">
+                <span className="text-slate-400 text-sm">Session:</span>
+                <strong className="text-slate-200">Rehabilitation #12</strong>
+              </div>
+            </div>
           </div>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center p-3 bg-slate-800/50 rounded-xl">
-              <span className="text-slate-400 text-sm">ID:</span>
-              <strong className="text-slate-200">P-2025-001</strong>
-            </div>
-            <div className="flex justify-between items-center p-3 bg-slate-800/50 rounded-xl">
-              <span className="text-slate-400 text-sm">Age:</span>
-              <strong className="text-slate-200">45 Years</strong>
-            </div>
-            <div className="flex justify-between items-center p-3 bg-slate-800/50 rounded-xl">
-              <span className="text-slate-400 text-sm">Session:</span>
-              <strong className="text-slate-200">Rehabilitation #12</strong>
-            </div>
-          </div>
+
+          {/* AIPredictionCard dipindah ke sini */}
+          <AIPredictionCard predictionData={predictionData} />
         </div>
 
         {/* Center - ECG */}
-        <div className="lg:col-span-2 bg-card-dark p-6 rounded-2xl shadow-lg border border-slate-800 h-[400px] flex flex-col">
+        <div className="lg:col-span-2 bg-card-dark p-6 rounded-2xl shadow-lg border border-slate-800 min-h-[500px] flex flex-col">
           <h3 className="text-lg font-semibold text-slate-300 mb-4 flex items-center gap-2">
             <span className="w-1 h-6 bg-primary rounded-full"></span>
             ECG Monitor (AD8232)
@@ -83,9 +93,26 @@ export const Dashboard = () => {
           </div>
         </div>
 
-        {/* Right - Vitals */}
-        <div className="lg:col-span-1">
+        {/* Right - Vitals & Stats */}
+        <div className="lg:col-span-1 space-y-6">
           <VitalsCard vitalsData={vitalsData} isConnected={isConnected} />
+
+          {/* Card tambahan untuk statistik sesi jika perlu */}
+          <div className="bg-card-dark p-6 rounded-2xl shadow-lg border border-slate-800">
+            <h3 className="text-md font-semibold text-slate-300 mb-4">
+              Session Stats
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-slate-800/50 p-3 rounded-xl text-center">
+                <div className="text-2xl font-bold text-blue-400">12m</div>
+                <div className="text-xs text-slate-500">Duration</div>
+              </div>
+              <div className="bg-slate-800/50 p-3 rounded-xl text-center">
+                <div className="text-2xl font-bold text-green-400">Good</div>
+                <div className="text-xs text-slate-500">Signal Quality</div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Bottom - Flex Sensors */}

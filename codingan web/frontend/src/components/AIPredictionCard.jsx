@@ -24,7 +24,7 @@ export const AIPredictionCard = ({ predictionData }) => {
   };
 
   return (
-    <div className="bg-card-dark p-6 rounded-2xl shadow-lg border border-slate-800 h-full flex flex-col justify-between">
+    <div className="bg-card-dark px-6 py-12 rounded-2xl shadow-lg border border-slate-800 h-full flex flex-col justify-between">
       <div className="flex justify-between items-start mb-4">
         <h3 className="text-lg font-semibold text-slate-300 flex items-center gap-2">
           <svg

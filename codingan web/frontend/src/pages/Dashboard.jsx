@@ -100,7 +100,7 @@ export const Dashboard = () => {
 
           {/* AI Diagnosis & Session Stats - di bawah Vitals */}
           <div className="grid grid-cols-1 gap-6">
-            <div className="bg-card-dark py-12 rounded-2xl shadow-lg border border-slate-800">
+            <div className="bg-card-dark p-6 rounded-2xl shadow-lg border border-slate-800">
               <AIPredictionCard predictionData={predictionData} />
             </div>
 

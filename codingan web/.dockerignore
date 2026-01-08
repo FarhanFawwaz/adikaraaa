@@ -1,0 +1,7 @@
+ai/dataset
+ai/training
+**/__pycache__
+**/*.pyc
+.git
+frontend/node_modules
+.venv

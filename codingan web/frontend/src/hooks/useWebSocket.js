@@ -5,6 +5,7 @@ export const useWebSocket = (url = 'ws://localhost:8080') => {
   const [ecgData, setEcgData] = useState(null);
   const [flexData, setFlexData] = useState(null);
   const [vitalsData, setVitalsData] = useState(null);
+  const [predictionData, setPredictionData] = useState(null); // Add this
   const [error, setError] = useState(null);
   
   const wsRef = useRef(null);
@@ -44,6 +45,9 @@ export const useWebSocket = (url = 'ws://localhost:8080') => {
               break;
             case 'vitals':
               setVitalsData(data);
+              break;
+            case 'prediction': // Add this case
+              setPredictionData(data.data);
               break;
             case 'info':
               console.log('[WebSocket]', data.message);
@@ -107,13 +111,5 @@ export const useWebSocket = (url = 'ws://localhost:8080') => {
     return () => disconnect();
   }, [connect, disconnect]);
 
-  return {
-    isConnected,
-    ecgData,
-    flexData,
-    vitalsData,
-    error,
-    send,
-    reconnect: connect
-  };
+  return { isConnected, ecgData, flexData, vitalsData, predictionData, error }; // Add predictionData to return
 };

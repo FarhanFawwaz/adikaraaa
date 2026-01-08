@@ -3,24 +3,29 @@ import { useEffect, useRef } from "react";
 export const ECGChart = ({ ecgData, isConnected }) => {
   const canvasRef = useRef(null);
   const dataPointsRef = useRef([]);
-  const timeRef = useRef(0);
   const animationRef = useRef(null);
+  const latestValueRef = useRef(null); // Store latest value
 
-  const generateECGPoint = (t, canvasHeight) => {
-    const base = Math.sin(t * 0.1) * 5;
-    let beat = 0;
+  // Normalisasi nilai ECG dari server (range: ~0-1024) ke canvas height
+  const normalizeECGValue = (value, canvasHeight) => {
+    // Server mengirim nilai sekitar 512 ± 450
+    // Normalize ke range 0-1024, lalu scale ke canvas height
+    const minValue = 0;
+    const maxValue = 1024;
 
-    const phase = t % 80;
-    if (phase > 70 && phase < 76) {
-      beat = Math.random() * -80 + 40;
-    } else if (phase > 65 && phase <= 70) {
-      beat = 15;
-    } else if (phase > 76 && phase < 80) {
-      beat = 10;
-    }
+    // Clamp value
+    const clampedValue = Math.max(minValue, Math.min(maxValue, value));
 
-    return canvasHeight / 2 + base + beat + Math.random() * 2;
+    // Scale ke canvas height (flip vertical karena canvas origin di top-left)
+    return canvasHeight - (clampedValue / maxValue) * canvasHeight;
   };
+
+  // Update latest value when new data arrives
+  useEffect(() => {
+    if (isConnected && ecgData?.value !== undefined) {
+      latestValueRef.current = ecgData.value;
+    }
+  }, [ecgData, isConnected]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -42,16 +47,21 @@ export const ECGChart = ({ ecgData, isConnected }) => {
 
       dataPointsRef.current.shift();
 
-      if (isConnected && ecgData?.value) {
-        dataPointsRef.current.push(height - (ecgData.value % height));
+      if (isConnected && latestValueRef.current !== null) {
+        // Gunakan data dari server dengan normalisasi yang benar
+        const normalizedValue = normalizeECGValue(
+          latestValueRef.current,
+          height
+        );
+        dataPointsRef.current.push(normalizedValue);
       } else {
-        dataPointsRef.current.push(generateECGPoint(timeRef.current, height));
-        timeRef.current++;
+        // Jika tidak connected, tampilkan baseline
+        dataPointsRef.current.push(height / 2);
       }
 
       ctx.clearRect(0, 0, width, height);
       ctx.beginPath();
-      ctx.strokeStyle = "#10b981";
+      ctx.strokeStyle = isConnected ? "#10b981" : "#6b7280";
       ctx.lineWidth = 2;
       ctx.lineJoin = "round";
 
@@ -75,7 +85,7 @@ export const ECGChart = ({ ecgData, isConnected }) => {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [ecgData, isConnected]);
+  }, [isConnected]); // Remove ecgData from dependencies
 
   return <canvas ref={canvasRef} className="w-full h-full block" />;
 };

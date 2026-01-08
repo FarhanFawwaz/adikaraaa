@@ -6,7 +6,10 @@ services:
       dockerfile: Dockerfile
       target: backend
     working_dir: /app/backend
-    command: ["python", "server.py"]
+    command: ["nodemon", "--legacy-watch", "--exec", "python", "server.py"]
+    volumes:
+      - ./backend:/app/backend
+      - ./ai:/app/ai
     ports:
       - "8080:8080"
     restart: unless-stopped

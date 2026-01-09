@@ -8,7 +8,8 @@ RUN apt-get update && apt-get install -y nodejs npm && rm -rf /var/lib/apt/lists
 RUN npm install -g nodemon
 
 WORKDIR /app
-# Install Python dependencies (AI + Server)
+
+# Install Python dependencies for backend and AI
 RUN pip install --no-cache-dir websockets tensorflow-cpu numpy scipy h5py pandas neurokit2
 
 # Copy AI module and Backend

@@ -1,5 +1,37 @@
 version: '3.8'
 services:
+  mysql:
+    image: mysql:8.0
+    container_name: adikaraaa_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: adikaraaa_db
+      MYSQL_USER: adikaraaa
+      MYSQL_PASSWORD: adikaraaa123
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: adikaraaa_phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8081:80"
+    restart: unless-stopped
+    depends_on:
+      - mysql
+
   backend:
     build:
       context: .
@@ -12,7 +44,16 @@ services:
       - ./ai:/app/ai
     ports:
       - "8080:8080"
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_NAME=adikaraaa_db
+      - DB_USER=adikaraaa
+      - DB_PASSWORD=adikaraaa123
     restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
 
   frontend:
     build:
@@ -31,3 +72,6 @@ services:
     restart: unless-stopped
     depends_on:
       - backend
+
+volumes:
+  mysql_data:

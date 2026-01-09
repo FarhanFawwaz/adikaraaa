@@ -25,23 +25,25 @@ project_root = os.path.dirname(current_dir)
 if project_root not in sys.path:
     sys.path.append(project_root)
 
-print(f"[Debug] Project Root: {project_root}")
-print(f"[Debug] Sys Path: {sys.path}")
+print(f"[Debug] Project Root: {project_root}", flush=True)
+print(f"[Debug] Sys Path: {sys.path}", flush=True)
 
 AI_AVAILABLE = False
 predictor = None
 
 try:
-    print("[Server] 🚀 Menginisialisasi AI Model...")
+    print("[Server] 🚀 Menginisialisasi AI Model...", flush=True)
     from ai.predict import ECGPredictor
     
+    print("[Server] 🔄 Creating ECGPredictor instance...", flush=True)
     # Init predictor
     predictor = ECGPredictor()
     
+    print("[Server] 🧪 Testing model with dummy data...", flush=True)
     # Test prediksi awal untuk memastikan model jalan
     dummy = [512] * 3000
     res = predictor.predict(dummy, fs=100)
-    print(f"[Server] Test Prediksi: {res.get('prediction_label', 'Fail')}")
+    print(f"[Server] Test Prediksi: {res.get('prediction_label', 'Fail')}", flush=True)
     
     AI_AVAILABLE = True
     print("[Server] ✅ AI Model siap digunakan.")

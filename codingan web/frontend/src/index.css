@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #0056b3;
+  --color-accent: #00d4ff;
+  --color-dark: #0f172a;
+  --color-card-dark: #1e293b;
+  --color-light: #f8fafc;
+  --color-text-dark: #334155;
+  --color-text-light: #f1f5f9;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-purple: #8b5cf6;
+
+  --font-sans: "Segoe UI", system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply antialiased text-text-dark bg-light;
+  }
+}

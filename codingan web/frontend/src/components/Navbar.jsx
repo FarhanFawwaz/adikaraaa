@@ -59,7 +59,7 @@ export const Navbar = () => {
                 "/games"
               )}`}
             >
-              Games
+              Rehabilitation
             </Link>
           </div>
         </div>

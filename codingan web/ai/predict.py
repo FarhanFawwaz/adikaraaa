@@ -14,15 +14,17 @@ class ECGPredictor:
     def _load_model(self):
         """Load model dengan path yang aman dan compile=False"""
         try:
+            print("[ECGPredictor] Loading model...", flush=True)
             # Gunakan path absolut relatif terhadap file script ini
             base_dir = os.path.dirname(os.path.abspath(__file__))
             model_path = os.path.join(base_dir, 'model', 'ResNet_30s_34lay_16conv.hdf5')
             
+            print(f"[ECGPredictor] Model path: {model_path}", flush=True)
             # compile=False penting untuk compatibilitas versi Keras/TF
             self.model = load_model(model_path, compile=False)
-            print("✅ Model loaded successfully from:", model_path)
+            print("✅ Model loaded successfully from:", model_path, flush=True)
         except Exception as e:
-            print(f"❌ Error loading model: {e}")
+            print(f"❌ Error loading model: {e}", flush=True)
             self.model = None
 
     def preprocess_signal(self, raw_data, original_fs):

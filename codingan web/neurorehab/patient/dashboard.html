@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Pasien - NeuroRehab Glove AI</title>
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-hand-sparkles"></i>
+                <span>NeuroRehab<span class="gradient-text">AI</span></span>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item active">
+                <i class="fas fa-home"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#game-terapi" class="nav-item"
+                onclick="document.getElementById('game-terapi').scrollIntoView({behavior: 'smooth'}); return false;">
+                <i class="fas fa-gamepad"></i>
+                <span>Game Terapi</span>
+            </a>
+            <a href="#progress" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Progress</span>
+            </a>
+            <a href="#routine" class="nav-item">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Jadwal</span>
+            </a>
+            <a href="#achievements" class="nav-item">
+                <i class="fas fa-trophy"></i>
+                <span>Pencapaian</span>
+            </a>
+            <a href="#settings" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Pengaturan</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-profile">
+                <div class="avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-info">
+                    <strong id="userName">Farhan Muamar</strong>
+                    <span id="userRole">Pasien</span>
+                </div>
+            </div>
+            <button class="btn-logout" onclick="AuthManager.logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div class="top-bar-left">
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="greeting">
+                    <h1 id="greetingText">Selamat pagi, Farhan! 👋</h1>
+                    <p id="greetingSubtext">Mari lanjutkan latihan rehabilitasi Anda hari ini</p>
+                </div>
+            </div>
+
+            <div class="top-bar-right">
+                <div class="date-display">
+                    <i class="fas fa-calendar"></i>
+                    <span id="currentDate">Loading...</span>
+                </div>
+
+                <div class="notification-bell">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-grid">
+            <!-- Quick Stats -->
+            <section class="stats-row">
+                <div class="stat-card" data-aos="fade-up">
+                    <div class="stat-icon" style="background: var(--gradient-primary);">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Streak Harian</span>
+                        <div class="stat-value">
+                            <span class="counter" data-target="7">0</span>
+                            <span class="stat-unit">hari</span>
+                        </div>
+                        <span class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> +2 dari minggu lalu
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="stat-icon" style="background: var(--gradient-ocean);">
+                        <i class="fas fa-dumbbell"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Total Latihan</span>
+                        <div class="stat-value">
+                            <span class="counter" data-target="42">0</span>
+                            <span class="stat-unit">sesi</span>
+                        </div>
+                        <span class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> 12% bulan ini
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="stat-icon" style="background: var(--gradient-forest);">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Pencapaian</span>
+                        <div class="stat-value">
+                            <span class="counter" data-target="8">0</span>
+                            <span class="stat-unit">/ 15</span>
+                        </div>
+                        <span class="stat-change">
+                            53% terkumpul
+                        </span>
+                    </div>
+                </div>
+
+                <div class="stat-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="stat-icon" style="background: var(--gradient-sunset);">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-label">Detak Jantung</span>
+                        <div class="stat-value">
+                            <span id="liveHeartRate">75</span>
+                            <span class="stat-unit">bpm</span>
+                        </div>
+                        <span class="stat-change">
+                            <span class="status-indicator status-normal"></span> Normal
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Daily Routine -->
+            <section class="routine-section" data-aos="fade-up" id="routine">
+                <div class="section-title">
+                    <h2>
+                        <i class="fas fa-calendar-check"></i>
+                        Rutinitas Harian
+                    </h2>
+                    <div class="progress-summary">
+                        <span id="routineProgress">2/5 selesai</span>
+                        <div class="progress-bar-mini">
+                            <div class="progress-fill" style="width: 40%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="routine-timeline">
+                    <!-- Morning Session -->
+                    <div class="routine-item completed">
+                        <div class="routine-time">
+                            <i class="fas fa-check-circle"></i>
+                            <span>07:00</span>
+                        </div>
+                        <div class="routine-content">
+                            <h3>Finger Piano</h3>
+                            <p>Latihan motorik halus jari - Pemanasan pagi</p>
+                            <div class="routine-meta">
+                                <span class="duration"><i class="fas fa-clock"></i> 5 menit</span>
+                                <span class="score"><i class="fas fa-star"></i> 850 poin</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="routine-item completed">
+                        <div class="routine-time">
+                            <i class="fas fa-check-circle"></i>
+                            <span>07:10</span>
+                        </div>
+                        <div class="routine-content">
+                            <h3>Fruit Catch</h3>
+                            <p>Latihan kekuatan genggaman</p>
+                            <div class="routine-meta">
+                                <span class="duration"><i class="fas fa-clock"></i> 8 menit</span>
+                                <span class="score"><i class="fas fa-star"></i> 920 poin</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Afternoon Session -->
+                    <div class="routine-item current">
+                        <div class="routine-time">
+                            <i class="fas fa-play-circle"></i>
+                            <span>14:00</span>
+                        </div>
+                        <div class="routine-content">
+                            <h3>Memory Pattern</h3>
+                            <p>Latihan kognitif dan sequencing motorik</p>
+                            <div class="routine-meta">
+                                <span class="duration"><i class="fas fa-clock"></i> 7 menit</span>
+                                <span class="difficulty"><i class="fas fa-signal"></i> Sedang</span>
+                            </div>
+                            <button class="btn btn-primary btn-sm" onclick="startGame('memory')">
+                                <i class="fas fa-play"></i> Mulai Sekarang
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Evening Session -->
+                    <div class="routine-item pending">
+                        <div class="routine-time">
+                            <i class="fas fa-circle"></i>
+                            <span>17:00</span>
+                        </div>
+                        <div class="routine-content">
+                            <h3>Gardening Simulator</h3>
+                            <p>Latihan fungsional dan long-term engagement</p>
+                            <div class="routine-meta">
+                                <span class="duration"><i class="fas fa-clock"></i> 10 menit</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="routine-item pending">
+                        <div class="routine-time">
+                            <i class="fas fa-circle"></i>
+                            <span>20:00</span>
+                        </div>
+                        <div class="routine-content">
+                            <h3>Finger Piano (Relaksasi)</h3>
+                            <p>Latihan malam - musik menenangkan</p>
+                            <div class="routine-meta">
+                                <span class="duration"><i class="fas fa-clock"></i> 5 menit</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Game Launcher -->
+            <section class="game-launcher" data-aos="fade-up" id="game-terapi">
+                <div class="section-title">
+                    <h2>
+                        <i class="fas fa-gamepad"></i>
+                        Game Terapi
+                    </h2>
+                    <span class="link-view-all" style="opacity: 0.5; cursor: default;">
+                        <i class="fas fa-check-circle"></i> Semua game ada di sini
+                    </span>
+                </div>
+
+                <div class="game-grid">
+                    <div class="game-quick-card piano" onclick="startGame('piano')">
+                        <div class="game-icon">
+                            <i class="fas fa-music"></i>
+                        </div>
+                        <h3>Finger Piano</h3>
+                        <p>Motorik Halus</p>
+                        <div class="game-stats-mini">
+                            <span><i class="fas fa-clock"></i> 5-7 min</span>
+                            <span><i class="fas fa-fire"></i> 850 avg</span>
+                        </div>
+                    </div>
+
+                    <div class="game-quick-card catch" onclick="startGame('catch')">
+                        <div class="game-icon">
+                            <i class="fas fa-apple-alt"></i>
+                        </div>
+                        <h3>Fruit Catch</h3>
+                        <p>Grip Strength</p>
+                        <div class="game-stats-mini">
+                            <span><i class="fas fa-clock"></i> 5-8 min</span>
+                            <span><i class="fas fa-fire"></i> 920 avg</span>
+                        </div>
+                    </div>
+
+                    <div class="game-quick-card memory" onclick="startGame('memory')">
+                        <div class="game-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3>Memory Pattern</h3>
+                        <p>Kognitif + Motorik</p>
+                        <div class="game-stats-mini">
+                            <span><i class="fas fa-clock"></i> 5-8 min</span>
+                            <span><i class="fas fa-fire"></i> 780 avg</span>
+                        </div>
+                    </div>
+
+                    <div class="game-quick-card garden" onclick="startGame('garden')">
+                        <div class="game-icon">
+                            <i class="fas fa-seedling"></i>
+                        </div>
+                        <h3>Gardening</h3>
+                        <p>Long-term</p>
+                        <div class="game-stats-mini">
+                            <span><i class="fas fa-clock"></i> 10-15 min</span>
+                            <span><i class="fas fa-fire"></i> 1050 avg</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Progress Chart -->
+            <section class="chart-section" data-aos="fade-up" id="progress">
+                <div class="section-title">
+                    <h2>
+                        <i class="fas fa-chart-line"></i>
+                        Progress Mingguan
+                    </h2>
+                    <div class="chart-controls">
+                        <button class="btn-chart-filter active" data-filter="week">Minggu</button>
+                        <button class="btn-chart-filter" data-filter="month">Bulan</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="progressChart"></canvas>
+                </div>
+            </section>
+
+            <!-- Heart Monitor Widget -->
+            <section class="heart-monitor" data-aos="fade-up">
+                <div class="section-title">
+                    <h2>
+                        <i class="fas fa-heartbeat"></i>
+                        Monitoring Jantung
+                    </h2>
+                    <span class="status-badge status-normal">
+                        <span class="pulse-dot"></span> Normal
+                    </span>
+                </div>
+
+                <div class="vitals-grid">
+                    <div class="vital-card">
+                        <div class="vital-icon heart-rate">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <div class="vital-info">
+                            <span class="vital-label">Detak Jantung</span>
+                            <div class="vital-value">
+                                <span id="heartRateValue">75</span>
+                                <span class="unit">bpm</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="vital-card">
+                        <div class="vital-icon spo2">
+                            <i class="fas fa-lungs"></i>
+                        </div>
+                        <div class="vital-info">
+                            <span class="vital-label">Saturasi Oksigen</span>
+                            <div class="vital-value">
+                                <span id="spo2Value">98</span>
+                                <span class="unit">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ecg-viewer">
+                    <canvas id="ecgCanvas"></canvas>
+                </div>
+
+                <div class="heart-status-footer">
+                    <span><i class="fas fa-shield-check"></i> Tidak ada anomali terdeteksi</span>
+                    <a href="#" class="link-primary">Lihat Detail <i class="fas fa-arrow-right"></i></a>
+                </div>
+            </section>
+
+            <!-- Recent Achievements -->
+            <section class="achievements-preview" data-aos="fade-up" id="achievements">
+                <div class="section-title">
+                    <h2>
+                        <i class="fas fa-trophy"></i>
+                        Pencapaian Terbaru
+                    </h2>
+                    <a href="achievements.html" class="link-view-all">Lihat Semua <i class="fas fa-arrow-right"></i></a>
+                </div>
+
+                <div class="achievement-list">
+                    <div class="achievement-item unlocked">
+                        <div class="achievement-badge" style="background: var(--gradient-primary);">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <div class="achievement-info">
+                            <strong>Week Warrior</strong>
+                            <p>Latihan 7 hari berturut-turut</p>
+                            <span class="achievement-date">Didapat 2 hari lalu</span>
+                        </div>
+                    </div>
+
+                    <div class="achievement-item unlocked">
+                        <div class="achievement-badge" style="background: var(--gradient-ocean);">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="achievement-info">
+                            <strong>Perfect Score</strong>
+                            <p>Raih skor sempurna di Finger Piano</p>
+                            <span class="achievement-date">Didapat 5 hari lalu</span>
+                        </div>
+                    </div>
+
+                    <div class="achievement-item locked">
+                        <div class="achievement-badge">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <div class="achievement-info">
+                            <strong>Marathon Master</strong>
+                            <p>Latihan 30 hari berturut-turut</p>
+                            <span class="achievement-progress">7/30 hari</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="../js/main.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/dashboard.js"></script>
+</body>
+
+</html>

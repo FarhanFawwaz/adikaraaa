@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="NeuroRehab Glove AI - Sistem Fisioterapi Pasca-Stroke Berbasis Gamifikasi IoT dengan Deteksi Aritmia Jantung">
+    <meta name="keywords" content="rehabilitasi stroke, fisioterapi, IoT, aritmia, gamifikasi">
+    <title>NeuroRehab Glove AI - Rehabilitasi Stroke Pintar</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/landing.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="nav-content">
+                <div class="logo">
+                    <i class="fas fa-hand-sparkles"></i>
+                    <span>NeuroRehab<span class="gradient-text">AI</span></span>
+                </div>
+                
+                <div class="nav-links" id="navLinks">
+                    <a href="#home" class="nav-link active">Beranda</a>
+                    <a href="#features" class="nav-link">Fitur</a>
+                    <a href="#games" class="nav-link">Game Terapi</a>
+                    <a href="#technology" class="nav-link">Teknologi</a>
+                    <a href="#about" class="nav-link">Tentang</a>
+                </div>
+                
+                <div class="nav-actions">
+                    <button class="btn btn-outline" onclick="location.href='auth/login.html'">
+                        <i class="fas fa-sign-in-alt"></i> Login
+                    </button>
+                    <button class="btn btn-primary" onclick="location.href='auth/register.html'">
+                        <i class="fas fa-user-plus"></i> Daftar
+                    </button>
+                </div>
+                
+                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-background">
+            <div class="gradient-orb orb-1"></div>
+            <div class="gradient-orb orb-2"></div>
+            <div class="gradient-orb orb-3"></div>
+        </div>
+        
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <div class="badge fade-in">
+                        <i class="fas fa-trophy"></i>
+                        Inovasi Telkom University 2026
+                    </div>
+                    
+                    <h1 class="hero-title fade-in-up">
+                        Rehabilitasi Stroke<br>
+                        <span class="gradient-text">Lebih Cerdas</span> dengan<br>
+                        <span class="typing-text">Gamifikasi AI</span>
+                    </h1>
+                    
+                    <p class="hero-description fade-in-up delay-1">
+                        Sarung tangan pintar yang mengubah fisioterapi menjadi pengalaman menyenangkan,
+                        sambil memantau kesehatan jantung Anda secara real-time dengan teknologi AI.
+                    </p>
+                    
+                    <div class="hero-stats fade-in-up delay-2">
+                        <div class="stat-item">
+                            <div class="stat-value">
+                                <i class="fas fa-heartbeat"></i>
+                                <span class="counter" data-target="98">0</span>%
+                            </div>
+                            <div class="stat-label">Akurasi Deteksi</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">
+                                <i class="fas fa-gamepad"></i>
+                                <span class="counter" data-target="4">0</span>+
+                            </div>
+                            <div class="stat-label">Game Terapi</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">
+                                <i class="fas fa-users"></i>
+                                <span class="counter" data-target="1000">0</span>+
+                            </div>
+                            <div class="stat-label">Target Pengguna</div>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-actions fade-in-up delay-3">
+                        <button class="btn btn-hero" onclick="location.href='patient/dashboard.html'">
+                            <i class="fas fa-rocket"></i>
+                            Mulai Rehabilitasi
+                            <span class="btn-glow"></span>
+                        </button>
+                        <button class="btn btn-outline-hero" onclick="scrollToSection('demo')">
+                            <i class="fas fa-play-circle"></i>
+                            Lihat Demo
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="hero-visual fade-in-right">
+                    <div class="glove-showcase">
+                        <div class="glove-container">
+                            <img src="assets/images/glove-mockup.svg" alt="NeuroRehab Glove" class="glove-image">
+                            <div class="pulse-ring"></div>
+                            <div class="pulse-ring delay-1"></div>
+                        </div>
+                        
+                        <!-- Floating Cards -->
+                        <div class="floating-card card-1">
+                            <div class="card-icon"><i class="fas fa-hand-rock"></i></div>
+                            <div class="card-text">
+                                <strong>Flex Sensor</strong>
+                                <span>5 Sensor Jari</span>
+                            </div>
+                        </div>
+                        
+                        <div class="floating-card card-2">
+                            <div class="card-icon"><i class="fas fa-heart-pulse"></i></div>
+                            <div class="card-text">
+                                <strong>EKG Monitor</strong>
+                                <span>Real-time</span>
+                            </div>
+                        </div>
+                        
+                        <div class="floating-card card-3">
+                            <div class="card-icon"><i class="fas fa-brain"></i></div>
+                            <div class="card-text">
+                                <strong>AI Detection</strong>
+                                <span>Aritmia 98%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="scroll-indicator">
+            <div class="mouse">
+                <div class="wheel"></div>
+            </div>
+            <p>Scroll untuk jelajahi</p>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-subtitle">Mengapa Pilih Kami?</span>
+                <h2 class="section-title">Fitur <span class="gradient-text">Unggulan</span></h2>
+                <p class="section-description">
+                    Kombinasi teknologi IoT, AI, dan gamifikasi untuk rehabilitasi yang efektif dan menyenangkan
+                </p>
+            </div>
+            
+            <div class="features-grid">
+                <!-- Feature 1 -->
+                <div class="feature-card" data-aos="fade-up">
+                    <div class="feature-icon">
+                        <i class="fas fa-gamepad"></i>
+                    </div>
+                    <h3 class="feature-title">Gamifikasi Terapi</h3>
+                    <p class="feature-description">
+                        Latihan fisioterapi berubah jadi game seru! Piano virtual, tangkap buah, 
+                        dan mini game lainnya membuat rehabilitasi tidak membosankan.
+                    </p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> 4+ Game interaktif</li>
+                        <li><i class="fas fa-check"></i> Adaptive difficulty</li>
+                        <li><i class="fas fa-check"></i> Progress tracking</li>
+                    </ul>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                    <div class="feature-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h3 class="feature-title">Monitoring Jantung</h3>
+                    <p class="feature-description">
+                        Pantau detak jantung dan SpO2 secara real-time dengan sensor medis MAX30102 
+                        dan EKG menggunakan AD8232.
+                    </p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> Real-time vitals</li>
+                        <li><i class="fas fa-check"></i> EKG visualization</li>
+                        <li><i class="fas fa-check"></i> Alert system</li>
+                    </ul>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="feature-title">AI Aritmia Detection</h3>
+                    <p class="feature-description">
+                        Algoritma Deep Learning (FCNN) mendeteksi 5 jenis aritmia dengan akurasi 98% 
+                        berdasarkan MIT-BIH database.
+                    </p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> 98% accuracy</li>
+                        <li><i class="fas fa-check"></i> 5 jenis denyut</li>
+                        <li><i class="fas fa-check"></i> Early warning</li>
+                    </ul>
+                </div>
+                
+                <!-- Feature 4 -->
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3 class="feature-title">Progress Analytics</h3>
+                    <p class="feature-description">
+                        Dashboard lengkap untuk pasien dan fisioterapis. Lacak ROM, konsistensi latihan, 
+                        dan perkembangan dari waktu ke waktu.
+                    </p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> Visual charts</li>
+                        <li><i class="fas fa-check"></i> Compliance tracking</li>
+                        <li><i class="fas fa-check"></i> Goal setting</li>
+                    </ul>
+                </div>
+                
+                <!-- Feature 5 -->
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                    <h3 class="feature-title">Safety First</h3>
+                    <p class="feature-description">
+                        Sistem auto-pause saat anomali jantung terdeteksi. 
+                        Notifikasi instant ke keluarga dan tenaga medis.
+                    </p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> Auto-pause game</li>
+                        <li><i class="fas fa-check"></i> Instant alert</li>
+                        <li><i class="fas fa-check"></i> Fatigue detection</li>
+                    </ul>
+                </div>
+                
+                <!-- Feature 6 -->
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="500">
+                    <div class="feature-icon">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <h3 class="feature-title">Harga Terjangkau</h3>
+                    <p class="feature-description">
+                        Dirancang dengan komponen COTS (Commercial Off-The-Shelf) 
+                        dengan biaya produksi di bawah Rp 1 juta.
+                    </p>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> < Rp 1.000.000</li>
+                        <li><i class="fas fa-check"></i> IoT ready</li>
+                        <li><i class="fas fa-check"></i> Mudah dirawat</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Games Section -->
+    <section class="games-section" id="games">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-subtitle">Latihan Jadi Lebih Seru</span>
+                <h2 class="section-title">Game <span class="gradient-text">Rehabilitasi</span></h2>
+                <p class="section-description">
+                    Setiap game dirancang untuk melatih aspek motorik berbeda dengan cara yang menyenangkan
+                </p>
+            </div>
+            
+            <div class="games-showcase">
+                <div class="game-card active" data-game="piano">
+                    <div class="game-image">
+                        <div class="game-preview piano-preview">
+                            <i class="fas fa-music"></i>
+                        </div>
+                    </div>
+                    <div class="game-info">
+                        <div class="game-tag">Motorik Halus</div>
+                        <h3 class="game-title">Finger Piano</h3>
+                        <p class="game-description">
+                            Mainkan melodi dengan gerakan jari. Melatih koordinasi jari individual dan timing.
+                        </p>
+                        <div class="game-metrics">
+                            <span><i class="fas fa-clock"></i> 5-7 menit</span>
+                            <span><i class="fas fa-signal"></i> Pemula - Mahir</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="game-card" data-game="catch">
+                    <div class="game-image">
+                        <div class="game-preview catch-preview">
+                            <i class="fas fa-apple-alt"></i>
+                        </div>
+                    </div>
+                    <div class="game-info">
+                        <div class="game-tag">Grip Strength</div>
+                        <h3 class="game-title">Fruit Catch</h3>
+                        <p class="game-description">
+                            Tangkap buah jatuh dengan menggenggam tangan. Melatih kekuatan dan kecepatan reaksi.
+                        </p>
+                        <div class="game-metrics">
+                            <span><i class="fas fa-clock"></i> 5-8 menit</span>
+                            <span><i class="fas fa-signal"></i> Mudah - Sedang</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="game-card" data-game="memory">
+                    <div class="game-image">
+                        <div class="game-preview memory-preview">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                    </div>
+                    <div class="game-info">
+                        <div class="game-tag">Kognitif + Motorik</div>
+                        <h3 class="game-title">Memory Pattern</h3>
+                        <p class="game-description">
+                            Ikuti urutan gerakan jari. Melatih memori kerja dan sequencing motorik.
+                        </p>
+                        <div class="game-metrics">
+                            <span><i class="fas fa-clock"></i> 5-8 menit</span>
+                            <span><i class="fas fa-signal"></i> Sedang - Sulit</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="game-card" data-game="garden">
+                    <div class="game-image">
+                        <div class="game-preview garden-preview">
+                            <i class="fas fa-seedling"></i>
+                        </div>
+                    </div>
+                    <div class="game-info">
+                        <div class="game-tag">Long-term Engagement</div>
+                        <h3 class="game-title">Gardening Simulator</h3>
+                        <p class="game-description">
+                            Tanam dan rawat taman virtual. Latihan konsisten membuat tanaman tumbuh indah.
+                        </p>
+                        <div class="game-metrics">
+                            <span><i class="fas fa-clock"></i> 10-15 menit</span>
+                            <span><i class="fas fa-signal"></i> Semua Level</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technology Section -->
+    <section class="technology" id="technology">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-subtitle">Powered by Advanced Tech</span>
+                <h2 class="section-title">Teknologi <span class="gradient-text">Di Baliknya</span></h2>
+            </div>
+            
+            <div class="tech-grid">
+                <div class="tech-stack">
+                    <h3>Hardware</h3>
+                    <div class="tech-items">
+                        <div class="tech-item">
+                            <i class="fas fa-microchip"></i>
+                            <span>ESP32 Microcontroller</span>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fas fa-hand-pointer"></i>
+                            <span>Flex Sensors (5x)</span>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fas fa-heartbeat"></i>
+                            <span>MAX30102 (SpO2/HR)</span>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fas fa-wave-square"></i>
+                            <span>AD8232 (EKG)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tech-stack">
+                    <h3>Software</h3>
+                    <div class="tech-items">
+                        <div class="tech-item">
+                            <i class="fab fa-python"></i>
+                            <span>TensorFlow (AI Model)</span>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fas fa-network-wired"></i>
+                            <span>MQTT over WebSocket</span>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fab fa-js"></i>
+                            <span>JavaScript (Frontend)</span>
+                        </div>
+                        <div class="tech-item">
+                            <i class="fas fa-database"></i>
+                            <span>MIT-BIH Database</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tech-diagram">
+                <img src="assets/images/system-architecture.svg" alt="System Architecture" class="diagram-image">
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="cta-title">Siap Memulai Perjalanan Rehabilitasi?</h2>
+                <p class="cta-description">
+                    Bergabunglah dengan ribuan pasien yang telah merasakan manfaat rehabilitasi dengan teknologi AI
+                </p>
+                <div class="cta-actions">
+                    <button class="btn btn-hero" onclick="location.href='auth/register.html'">
+                        <i class="fas fa-rocket"></i>
+                        Daftar Sekarang Gratis
+                    </button>
+                    <button class="btn btn-outline-hero" onclick="location.href='#about'">
+                        <i class="fas fa-info-circle"></i>
+                        Pelajari Lebih Lanjut
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="logo">
+                        <i class="fas fa-hand-sparkles"></i>
+                        <span>NeuroRehab<span class="gradient-text">AI</span></span>
+                    </div>
+                    <p class="footer-tagline">
+                        Rehabilitasi stroke yang lebih cerdas dengan teknologi IoT dan AI
+                    </p>
+                    <div class="social-links">
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h4>Produk</h4>
+                        <a href="#features">Fitur</a>
+                        <a href="#games">Game Terapi</a>
+                        <a href="#technology">Teknologi</a>
+                        <a href="patient/dashboard.html">Dashboard Pasien</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4>Perusahaan</h4>
+                        <a href="#about">Tentang Kami</a>
+                        <a href="#team">Tim</a>
+                        <a href="#contact">Kontak</a>
+                        <a href="#careers">Karir</a>
+                    </div>
+                    
+                    <div class="footer-column">
+                        <h4>Dukungan</h4>
+                        <a href="#faq">FAQ</a>
+                        <a href="#docs">Dokumentasi</a>
+                        <a href="#privacy">Kebijakan Privasi</a>
+                        <a href="#terms">Syarat & Ketentuan</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2026 NeuroRehab Glove AI - Pop Mie Dower, Telkom University. All rights reserved.</p>
+                <p class="footer-attribution">
+                    <i class="fas fa-trophy"></i> Inovasi SDGs Batch 2026
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/main.js"></script>
+    <script src="js/landing.js"></script>
+</body>
+</html>

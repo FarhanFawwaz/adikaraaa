@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Pattern - NeuroRehab Glove AI</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/games.css">
+</head>
+
+<body class="game-body">
+    <header class="game-header">
+        <div class="game-header-left">
+            <button class="btn-back" onclick="window.location.href='../patient/dashboard.html'">
+                <i class="fas fa-arrow-left"></i>
+                Dashboard
+            </button>
+            <div class="game-title-header">
+                <div class="game-icon-small" style="background: var(--gradient-ocean);">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div>
+                    <h1>Memory Pattern</h1>
+                    <p>Latihan Kognitif + Motorik</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="game-container">
+        <div class="game-screen">
+            <div class="screen-content">
+                <div class="game-icon-large" style="background: var(--gradient-ocean);">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h2>Memory Pattern</h2>
+                <p class="game-description">
+                    Game Simon Says untuk melatih memori dan koordinasi! Ikuti urutan gerakan jari yang ditampilkan.
+                    Dalam pengembangan dengan pola yang semakin kompleks!
+                </p>
+
+                <div class="coming-soon-features">
+                    <h3>Fitur yang Akan Datang:</h3>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Pola 3-7 gerakan berurutan</li>
+                        <li><i class="fas fa-check"></i> Visualisasi jari yang menyala</li>
+                        <li><i class="fas fa-check"></i> Suara untuk setiap gerakan</li>
+                        <li><i class="fas fa-check"></i> Skor berdasarkan kecepatan & akurasi</li>
+                        <li><i class="fas fa-check"></i> Mode endless challenge</li>
+                    </ul>
+                </div>
+
+                <div class="results-actions">
+                    <button class="btn btn-outline" onclick="window.location.href='../patient/dashboard.html'">
+                        <i class="fas fa-home"></i>
+                        Kembali ke Dashboard
+                    </button>
+                    <button class="btn btn-primary" onclick="window.location.href='finger-piano.html'">
+                        <i class="fas fa-gamepad"></i>
+                        Coba Finger Piano
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/main.js"></script>
+    <script src="../js/auth.js"></script>
+</body>
+
+</html>

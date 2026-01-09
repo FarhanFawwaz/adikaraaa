@@ -5,6 +5,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { GamesHub } from "./pages/GamesHub";
 import { BirdGame } from "./pages/BirdGame";
 import { LevelsGame } from "./pages/LevelsGame";
+import { DailyExerciseDetail } from "./pages/DailyExerciseDetail";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/games" element={<GamesHub />} />
           <Route path="/game/bird" element={<BirdGame />} />
           <Route path="/game/levels" element={<LevelsGame />} />
+          <Route path="/game/daily-exercise" element={<DailyExerciseDetail />} />
         </Routes>
       </Layout>
     </Router>

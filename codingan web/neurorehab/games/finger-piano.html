@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finger Piano - NeuroRehab Glove AI</title>
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/games.css">
+</head>
+
+<body class="game-body">
+    <!-- Game Header -->
+    <header class="game-header">
+        <div class="game-header-left">
+            <button class="btn-back" onclick="window.location.href='../patient/dashboard.html'">
+                <i class="fas fa-arrow-left"></i>
+                Dashboard
+            </button>
+            <div class="game-title-header">
+                <div class="game-icon-small">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div>
+                    <h1>Finger Piano</h1>
+                    <p>Latihan Motorik Halus</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="game-header-right">
+            <div class="game-stat">
+                <i class="fas fa-star"></i>
+                <span id="scoreDisplay">0</span>
+            </div>
+            <div class="game-stat">
+                <i class="fas fa-fire"></i>
+                <span id="comboDisplay">0x</span>
+            </div>
+            <div class="game-stat">
+                <i class="fas fa-clock"></i>
+                <span id="timerDisplay">5:00</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Game Container -->
+    <main class="game-container">
+        <!-- Start Screen -->
+        <div class="game-screen" id="startScreen">
+            <div class="screen-content">
+                <div class="game-icon-large">
+                    <i class="fas fa-music"></i>
+                </div>
+                <h2>Finger Piano</h2>
+                <p class="game-description">
+                    Mainkan melodi dengan gerakan jari Anda. Setiap jari mengontrol satu not musik.
+                    Latih koordinasi dan timing untuk mendapatkan skor tinggi!
+                </p>
+
+                <div class="difficulty-selector">
+                    <h3>Pilih Tingkat Kesulitan:</h3>
+                    <div class="difficulty-options">
+                        <button class="btn-difficulty active" data-level="easy">
+                            <i class="fas fa-seedling"></i>
+                            <span>Mudah</span>
+                            <small>Single notes</small>
+                        </button>
+                        <button class="btn-difficulty" data-level="medium">
+                            <i class="fas fa-fire"></i>
+                            <span>Sedang</span>
+                            <small>Sequential patterns</small>
+                        </button>
+                        <button class="btn-difficulty" data-level="hard">
+                            <i class="fas fa-trophy"></i>
+                            <span>Sulit</span>
+                            <small>Chords & combos</small>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="controls-info">
+                    <h4>Kontrol:</h4>
+                    <div class="control-keys">
+                        <div class="key-item">
+                            <kbd>A</kbd>
+                            <span>Jempol / C</span>
+                        </div>
+                        <div class="key-item">
+                            <kbd>S</kbd>
+                            <span>Telunjuk / D</span>
+                        </div>
+                        <div class="key-item">
+                            <kbd>D</kbd>
+                            <span>Tengah / E</span>
+                        </div>
+                        <div class="key-item">
+                            <kbd>F</kbd>
+                            <span>Manis / F</span>
+                        </div>
+                        <div class="key-item">
+                            <kbd>G</kbd>
+                            <span>Kelingking / G</span>
+                        </div>
+                    </div>
+                    <p class="control-note">
+                        <i class="fas fa-info-circle"></i>
+                        Gunakan keyboard untuk testing. Sarung tangan akan otomatis terdeteksi saat tersambung.
+                    </p>
+                </div>
+
+                <button class="btn btn-hero" onclick="startGame()">
+                    <i class="fas fa-play"></i>
+                    Mulai Bermain
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div class="game-screen hidden" id="playScreen">
+            <div class="game-canvas-container">
+                <!-- Piano Keys Display -->
+                <div class="piano-container">
+                    <div class="piano-key" data-note="C" data-finger="thumb">
+                        <div class="key-label">C</div>
+                        <div class="finger-icon"><i class="fas fa-hand-point-up"></i></div>
+                        <div class="key-highlight"></div>
+                    </div>
+                    <div class="piano-key" data-note="D" data-finger="index">
+                        <div class="key-label">D</div>
+                        <div class="finger-icon"><i class="fas fa-hand-point-up"></i></div>
+                        <div class="key-highlight"></div>
+                    </div>
+                    <div class="piano-key" data-note="E" data-finger="middle">
+                        <div class="key-label">E</div>
+                        <div class="finger-icon"><i class="fas fa-hand-point-up"></i></div>
+                        <div class="key-highlight"></div>
+                    </div>
+                    <div class="piano-key" data-note="F" data-finger="ring">
+                        <div class="key-label">F</div>
+                        <div class="finger-icon"><i class="fas fa-hand-point-up"></i></div>
+                        <div class="key-highlight"></div>
+                    </div>
+                    <div class="piano-key" data-note="G" data-finger="pinky">
+                        <div class="key-label">G</div>
+                        <div class="finger-icon"><i class="fas fa-hand-point-up"></i></div>
+                        <div class="key-highlight"></div>
+                    </div>
+                </div>
+
+                <!-- Note Display Area -->
+                <div class="note-display">
+                    <canvas id="noteCanvas" width="800" height="400"></canvas>
+                </div>
+
+                <!-- Progress & Feedback -->
+                <div class="game-progress">
+                    <div class="progress-bar-game">
+                        <div class="progress-fill-game" id="progressBar"></div>
+                    </div>
+                    <div class="feedback-display" id="feedbackDisplay"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div class="game-screen hidden" id="resultsScreen">
+            <div class="screen-content">
+                <div class="results-stars" id="starsDisplay">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+
+                <h2>Latihan Selesai!</h2>
+
+                <div class="results-stats">
+                    <div class="result-stat-card">
+                        <div class="stat-icon" style="background: var(--gradient-primary);">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Skor Total</span>
+                            <span class="stat-value" id="finalScore">0</span>
+                        </div>
+                    </div>
+
+                    <div class="result-stat-card">
+                        <div class="stat-icon" style="background: var(--gradient-ocean);">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Akurasi</span>
+                            <span class="stat-value" id="accuracyDisplay">0%</span>
+                        </div>
+                    </div>
+
+                    <div class="result-stat-card">
+                        <div class="stat-icon" style="background: var(--gradient-sunset);">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">Combo Terbaik</span>
+                            <span class="stat-value" id="bestComboDisplay">0x</span>
+                        </div>
+                    </div>
+
+                    <div class="result-stat-card">
+                        <div class="stat-icon" style="background: var(--gradient-forest);">
+                            <i class="fas fa-hand-sparkles"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-label">ROM Progress</span>
+                            <span class="stat-value" id="romDisplay">0%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="results-message" id="resultsMessage">
+                    <i class="fas fa-trophy"></i>
+                    <p>Kerja bagus! Terus latihan untuk meningkatkan koordinasi jari.</p>
+                </div>
+
+                <div class="results-actions">
+                    <button class="btn btn-outline" onclick="window.location.href='../patient/dashboard.html'">
+                        <i class="fas fa-home"></i>
+                        Kembali ke Dashboard
+                    </button>
+                    <button class="btn btn-primary" onclick="restartGame()">
+                        <i class="fas fa-redo"></i>
+                        Main Lagi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="../js/main.js"></script>
+    <script src="../js/auth.js"></script>
+    <script src="../js/games/piano-game.js"></script>
+</body>
+
+</html>

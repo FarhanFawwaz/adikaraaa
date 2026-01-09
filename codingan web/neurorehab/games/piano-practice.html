@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piano Practice Mode - NeuroRehab</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/games.css">
+    <style>
+        /* Practice Mode Specific Styles */
+        .practice-mode {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: var(--space-4);
+            border-radius: var(--radius-xl);
+            text-align: center;
+            margin-bottom: var(--space-6);
+        }
+
+        .hit-feedback {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 120px;
+            font-weight: 900;
+            opacity: 0;
+            pointer-events: none;
+            text-shadow: 0 0 30px rgba(16, 185, 129, 0.8);
+            z-index: 1000;
+        }
+
+        .hit-feedback.show {
+            animation: hitPop 0.6s ease-out;
+        }
+
+        @keyframes hitPop {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+        }
+
+        .next-note-hint {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            padding: var(--space-4) var(--space-6);
+            border-radius: var(--radius-full);
+            font-size: var(--text-2xl);
+            font-weight: 800;
+            z-index: 100;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .timing-guide {
+            position: absolute;
+            bottom: 100px;
+            left: 0;
+            right: 0;
+            height: 120px;
+            background: linear-gradient(to top, rgba(16, 185, 129, 0.3), transparent);
+            border-top: 4px dashed #10b981;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body class="game-body">
+    <div class="hit-feedback" id="hitFeedback">✨</div>
+
+    <header class="game-header">
+        <div class="game-header-left">
+            <button class="btn-back" onclick="window.location.href='../patient/dashboard.html'">
+                <i class="fas fa-arrow-left"></i>
+                Dashboard
+            </button>
+            <div class="game-title-header">
+                <div class="game-icon-small">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div>
+                    <h1>Piano Practice Mode</h1>
+                    <p>Latihan Dasar - Super Easy!</p>
+                </div>
+            </div>
+        </div>
+        <div class="game-header-right">
+            <div class="game-stat">
+                <i class="fas fa-star"></i>
+                <span id="scoreDisplay">0</span>
+            </div>
+            <div class="game-stat">
+                <i class="fas fa-fire"></i>
+                <span id="streakDisplay">0</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="game-container">
+        <div class="game-screen" id="playScreen">
+            <div class="practice-mode">
+                <h3>🎹 Mode Latihan Dasar</h3>
+                <p>Notes akan turun berurutan: C → D → E → F → G</p>
+                <p>Tekan tombol yang sesuai saat lingkaran masuk ke zona hijau!</p>
+            </div>
+
+            <div class="game-canvas-container" style="position: relative;">
+                <div class="next-note-hint" id="nextNote">Siap? Tekan Mulai!</div>
+
+                <div class="piano-container">
+                    <div class="piano-key" data-note="C">
+                        <div class="key-label">C</div>
+                        <div class="finger-icon"><i class="fas fa-hand-point-up"></i></div>
+                        <kbd>A</kbd>
+                    </div>
+                    <div class="piano-key" data-note="D">
+                        <div class="key-label">D</div>
+                        <div class="finger-icon"><i class="fas fa-hand-point-up"></i></div>
+                        <kbd>S</kbd>
+                    </div>
+                    <div class="piano-key" data-note="E">
+                        <div class="key-label">E</div>
+                        <div class="finger-icon"><i class="fas fa-hand-point-up"></i></div>
+                        <kbd>D</kbd>
+                    </div>
+                    <div class="piano-key" data-note="F">
+                        <div class="key-label">F</div>
+                        <div class="finger-icon"><i class="fas fa-hand-point-up"></i></div>
+                        <kbd>F</kbd>
+                    </div>
+                    <div class="piano-key" data-note="G">
+                        <div class="key-label">G</div>
+                        <div class="finger-icon"><i class="fas fa-hand-point-up"></i></div>
+                        <kbd>G</kbd>
+                    </div>
+                </div>
+
+                <div class="note-display" style="position: relative;">
+                    <canvas id="noteCanvas" width="800" height="400"></canvas>
+                    <div class="timing-guide"></div>
+                </div>
+
+                <div class="game-progress">
+                    <button class="btn btn-hero" id="startBtn" onclick="startPractice()">
+                        <i class="fas fa-play"></i>
+                        Mulai Latihan
+                    </button>
+                    <div class="feedback-display" id="feedbackDisplay"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="../js/main.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        // Simple Practice Mode Logic
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        const NOTE_FREQUENCIES = {
+            'C': 261.63, 'D': 293.66, 'E': 329.63, 'F': 349.23, 'G': 392.00
+        };
+
+        const KEY_TO_NOTE = {
+            'a': 'C', 's': 'D', 'd': 'E', 'f': 'F', 'g': 'G'
+        };
+
+        let gameState = {
+            isPlaying: false,
+            currentNote: 0,
+            score: 0,
+            streak: 0,
+            sequence: ['C', 'D', 'E', 'F', 'G'], // Always same sequence
+            noteY: -50,
+            targetY: 320 // Hit zone
+        };
+
+        let animationId = null;
+
+        function startPractice() {
+            gameState.isPlaying = true;
+            gameState.currentNote = 0;
+            gameState.noteY = -50;
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('nextNote').textContent = `Siap: ${gameState.sequence[0]}`;
+            animateNote();
+        }
+
+        function animateNote() {
+            if (!gameState.isPlaying || gameState.currentNote >= 50) {
+                endPractice();
+                return;
+            }
+
+            const canvas = document.getElementById('noteCanvas');
+            const ctx = canvas.getContext('2d');
+            const currentNoteName = gameState.sequence[gameState.currentNote % 5];
+
+            // Clear canvas
+            ctx.fillStyle = '#111827';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw grid
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            for (let y = 0; y < canvas.height; y += 40) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Draw hit zone
+            ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
+            ctx.fillRect(0, gameState.targetY - 60, canvas.width, 120);
+
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(0, gameState.targetY);
+            ctx.lineTo(canvas.width, gameState.targetY);
+            ctx.stroke();
+
+            // Draw note position
+            const notePositions = {
+                'C': canvas.width * 0.1,
+                'D': canvas.width * 0.3,
+                'E': canvas.width * 0.5,
+                'F': canvas.width * 0.7,
+                'G': canvas.width * 0.9
+            };
+
+            const x = notePositions[currentNoteName];
+
+            // Draw falling note
+            const gradient = ctx.createRadialGradient(x, gameState.noteY, 0, x, gameState.noteY, 35);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(x, gameState.noteY, 35, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw note label
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 28px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText(currentNoteName, x, gameState.noteY + 10);
+
+            // Slow fall speed
+            gameState.noteY += 1.5; // Very slow!
+
+            // Auto-miss if passed
+            if (gameState.noteY > gameState.targetY + 80) {
+                showMiss();
+                nextNote();
+            }
+
+            animationId = requestAnimationFrame(animateNote);
+        }
+
+        function nextNote() {
+            gameState.currentNote++;
+            gameState.noteY = -50;
+
+            if (gameState.currentNote < 50) {
+                const nextNoteName = gameState.sequence[gameState.currentNote % 5];
+                document.getElementById('nextNote').textContent = `Selanjutnya: ${nextNoteName}`;
+            }
+        }
+
+        function checkHit(note) {
+            if (!gameState.isPlaying) return;
+
+            const currentNoteName = gameState.sequence[gameState.currentNote % 5];
+            const distance = Math.abs(gameState.noteY - gameState.targetY);
+
+            if (note === currentNoteName && distance < 80) {
+                // HIT!
+                gameState.score += 100;
+                gameState.streak++;
+
+                document.getElementById('scoreDisplay').textContent = gameState.score;
+                document.getElementById('streakDisplay').textContent = gameState.streak;
+
+                showHitEffect();
+                playNote(note);
+                highlightKey(note);
+                nextNote();
+            }
+        }
+
+        function showHitEffect() {
+            const hitElement = document.getElementById('hitFeedback');
+            const emojis = ['✨', '🎵', '⭐', '💫', '🌟'];
+            hitElement.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+            hitElement.classList.add('show');
+            setTimeout(() => hitElement.classList.remove('show'), 600);
+
+            document.getElementById('feedbackDisplay').textContent = 'PERFECT! 🎉';
+            document.getElementById('feedbackDisplay').className = 'feedback-display perfect';
+        }
+
+        function showMiss() {
+            gameState.streak = 0;
+            document.getElementById('streakDisplay').textContent = '0';
+            document.getElementById('feedbackDisplay').textContent = 'Coba lagi...';
+            document.getElementById('feedbackDisplay').className = 'feedback-display miss';
+        }
+
+        function playNote(note) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = NOTE_FREQUENCIES[note];
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        function highlightKey(note) {
+            const key = document.querySelector(`.piano-key[data-note="${note}"]`);
+            key.classList.add('active');
+            setTimeout(() => key.classList.remove('active'), 300);
+        }
+
+        function endPractice() {
+            gameState.isPlaying = false;
+            cancelAnimationFrame(animationId);
+            alert(`Latihan Selesai!\n\nSkor: ${gameState.score}\nStreak Terbaik: ${gameState.streak}\n\nKerja Bagus! 🎉`);
+            location.reload();
+        }
+
+        // Keyboard handler
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            const note = KEY_TO_NOTE[key];
+            if (note) {
+                e.preventDefault();
+                checkHit(note);
+            }
+        });
+    </script>
+</body>
+
+</html>

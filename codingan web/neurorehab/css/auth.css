@@ -161,7 +161,7 @@
 
 .input-wrapper input {
     width: 100%;
-    padding: var(--space-4) var(--space-4) var(--space-4) var(--space-12);
+    padding: var(--space-4) 52px var(--space-4) var(--space-12);
     border: 2px solid var(--gray-300);
     border-radius: var(--radius-lg);
     font-family: var(--font-primary);
@@ -177,17 +177,31 @@
 
 .toggle-password {
     position: absolute;
-    right: var(--space-4);
-    background: none;
+    right: var(--space-3);
+    background: transparent;
     border: none;
-    color: var(--gray-400);
+    color: var(--gray-600);
     cursor: pointer;
-    font-size: var(--text-lg);
-    transition: color var(--transition-fast);
+    font-size: 1.25rem;
+    padding: var(--space-3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border-radius: var(--radius-md);
+    width: 40px;
+    height: 40px;
+    z-index: 10;
 }
 
 .toggle-password:hover {
-    color: var(--gray-600);
+    color: var(--primary-600);
+    background: rgba(102, 126, 234, 0.1);
+    transform: scale(1.05);
+}
+
+.toggle-password:active {
+    transform: scale(0.95);
 }
 
 /* Form Options */

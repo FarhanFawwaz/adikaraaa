@@ -20,6 +20,7 @@ function initializeDashboard() {
     initProgressChart();
     initECGViewer();
     simulateHeartRate();
+    initSidebarNavigation();
 
     console.log('Dashboard initialized for:', user.name);
 }

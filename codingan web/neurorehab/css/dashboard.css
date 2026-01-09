@@ -551,6 +551,14 @@ body {
     background: var(--gradient-forest);
 }
 
+.game-quick-card.bird::before {
+    background: var(--gradient-ocean);
+}
+
+.game-quick-card.levels::before {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
 .game-quick-card:hover {
     transform: translateY(-8px);
     box-shadow: var(--shadow-2xl);
@@ -575,6 +583,14 @@ body {
 
 .game-quick-card.garden:hover {
     border-color: rgba(67, 233, 123, 0.5);
+}
+
+.game-quick-card.bird:hover {
+    border-color: rgba(79, 172, 254, 0.5);
+}
+
+.game-quick-card.levels:hover {
+    border-color: rgba(245, 158, 11, 0.5);
 }
 
 .game-icon {
@@ -607,6 +623,16 @@ body {
 
 .game-quick-card.garden .game-icon {
     background: var(--gradient-forest);
+    color: white;
+}
+
+.game-quick-card.bird .game-icon {
+    background: var(--gradient-ocean);
+    color: white;
+}
+
+.game-quick-card.levels .game-icon {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
     color: white;
 }
 

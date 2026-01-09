@@ -417,7 +417,9 @@ function startGame(gameName) {
         piano: '../games/finger-piano.html',
         catch: '../games/fruit-catch.html',
         memory: '../games/memory-pattern.html',
-        garden: '../games/gardening.html'
+        garden: '../games/gardening.html',
+        bird: '../games/bird-game.html',
+        levels: '../games/levels-game.html'
     };
 
     const url = gameUrls[gameName];

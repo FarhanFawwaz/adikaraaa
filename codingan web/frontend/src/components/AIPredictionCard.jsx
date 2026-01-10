@@ -1,7 +1,6 @@
 import React from "react";
 
 export const AIPredictionCard = ({ predictionData }) => {
-  // Default state jika belum ada data
   const data = predictionData || {
     prediction_label: "Waiting...",
     confidence: 0,
@@ -13,77 +12,176 @@ export const AIPredictionCard = ({ predictionData }) => {
     },
   };
 
-  const getStatusColor = (label) => {
-    if (label.includes("Normal"))
-      return "text-green-400 bg-green-400/10 border-green-400/20";
-    if (label.includes("AFib"))
-      return "text-red-400 bg-red-400/10 border-red-400/20";
-    if (label.includes("Noisy"))
-      return "text-yellow-400 bg-yellow-400/10 border-yellow-400/20";
-    return "text-blue-400 bg-blue-400/10 border-blue-400/20";
+  const getStatusStyle = (label) => {
+    if (label.includes("Normal")) {
+      return { color: "#10b981", bg: "rgba(16, 185, 129, 0.15)", border: "rgba(16, 185, 129, 0.3)" };
+    }
+    if (label.includes("AFib")) {
+      return { color: "#ef4444", bg: "rgba(239, 68, 68, 0.15)", border: "rgba(239, 68, 68, 0.3)" };
+    }
+    if (label.includes("Noisy")) {
+      return { color: "#f59e0b", bg: "rgba(245, 158, 11, 0.15)", border: "rgba(245, 158, 11, 0.3)" };
+    }
+    return { color: "#8b5cf6", bg: "rgba(139, 92, 246, 0.15)", border: "rgba(139, 92, 246, 0.3)" };
   };
 
-  return (
-    <div className="bg-card-dark px-6 py-12 rounded-2xl shadow-lg border border-slate-800 h-full flex flex-col justify-between">
-      <div className="flex justify-between items-start mb-4">
-        <h3 className="text-lg font-semibold text-slate-300 flex items-center gap-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6 text-purple-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 10V3L4 14h7v7l9-11h-7z"
-            />
-          </svg>
-          AI Diagnosis
-        </h3>
-        <span className="text-xs text-slate-500 bg-slate-800 px-2 py-1 rounded">
-          Live Analysis
-        </span>
-      </div>
+  const getProbColor = (label) => {
+    if (label.includes("Normal")) return "#10b981";
+    if (label.includes("AFib")) return "#ef4444";
+    if (label.includes("Noisy")) return "#f59e0b";
+    if (label.includes("Other")) return "#3b82f6";
+    return "#8b5cf6";
+  };
 
-      <div className="flex flex-col items-center justify-center my-2">
-        <div
-          className={`text-2xl font-bold px-6 py-3 rounded-xl border ${getStatusColor(
-            data.prediction_label
-          )} mb-2 transition-all duration-300`}
-        >
-          {data.prediction_label}
+  const getLabelIcon = (label) => {
+    if (label.includes("Normal")) return "✓";
+    if (label.includes("AFib")) return "⚠";
+    if (label.includes("Noisy")) return "~";
+    return "○";
+  };
+
+  const statusStyle = getStatusStyle(data.prediction_label);
+
+  return (
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      height: "100%",
+      gap: "8px",
+    }}>
+      {/* Main Prediction Display */}
+      <div style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "6px",
+        padding: "8px 0",
+      }}>
+        <div style={{
+          padding: "8px 16px",
+          borderRadius: "10px",
+          background: statusStyle.bg,
+          border: `1px solid ${statusStyle.border}`,
+          boxShadow: `0 0 15px ${statusStyle.border}`,
+        }}>
+          <span style={{
+            fontSize: "16px",
+            fontWeight: "700",
+            color: statusStyle.color,
+          }}>
+            {data.prediction_label}
+          </span>
         </div>
-        <div className="text-slate-400 text-sm">
-          Confidence:{" "}
-          <span className="text-white font-medium">
+
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+        }}>
+          <span style={{
+            fontSize: "10px",
+            color: "#94a3b8",
+            textTransform: "uppercase",
+            letterSpacing: "0.5px",
+          }}>
+            Confidence
+          </span>
+          <span style={{
+            fontSize: "14px",
+            fontWeight: "700",
+            color: "white",
+          }}>
             {(data.confidence * 100).toFixed(1)}%
           </span>
         </div>
       </div>
 
-      <div className="mt-4 space-y-2">
-        <div className="text-xs text-slate-500 uppercase font-semibold mb-2">
-          Probabilities
+      {/* Probabilities List */}
+      <div style={{
+        flex: "1",
+        background: "rgba(15, 23, 42, 0.5)",
+        borderRadius: "8px",
+        padding: "8px 10px",
+        border: "1px solid rgba(255, 255, 255, 0.05)",
+      }}>
+        <div style={{
+          fontSize: "9px",
+          color: "#64748b",
+          textTransform: "uppercase",
+          letterSpacing: "0.5px",
+          fontWeight: "600",
+          marginBottom: "6px",
+          paddingBottom: "4px",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
+        }}>
+          Class Probabilities
         </div>
-        {Object.entries(data.all_probabilities || {}).map(([label, prob]) => (
-          <div key={label} className="flex items-center gap-2 text-sm">
-            <span className="text-slate-400 w-20 truncate">
-              {label.split(" ")[0]}
-            </span>
-            <div className="flex-1 h-1.5 bg-slate-800 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-indigo-500 rounded-full transition-all duration-500"
-                style={{ width: `${prob * 100}%` }}
-              />
-            </div>
-            <span className="text-slate-300 w-10 text-right">
-              {(prob * 100).toFixed(0)}%
-            </span>
-          </div>
-        ))}
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "4px",
+        }}>
+          {Object.entries(data.all_probabilities || {}).map(([label, prob]) => {
+            const color = getProbColor(label);
+            const icon = getLabelIcon(label);
+            return (
+              <div key={label} style={{
+                display: "grid",
+                gridTemplateColumns: "55px 1fr 40px",
+                alignItems: "center",
+                gap: "8px",
+              }}>
+                <div style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontSize: "11px",
+                  color: "#cbd5e1",
+                  fontWeight: "500",
+                }}>
+                  <span style={{
+                    width: "12px",
+                    height: "12px",
+                    borderRadius: "3px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "8px",
+                    fontWeight: "700",
+                    background: `${color}20`,
+                    color: color,
+                  }}>
+                    {icon}
+                  </span>
+                  {label.split(" ")[0]}
+                </div>
+                <div style={{
+                  height: "4px",
+                  background: "rgba(255, 255, 255, 0.05)",
+                  borderRadius: "3px",
+                  overflow: "hidden",
+                }}>
+                  <div style={{
+                    height: "100%",
+                    width: `${Math.max(prob * 100, 2)}%`,
+                    background: `linear-gradient(90deg, ${color}, ${color}88)`,
+                    borderRadius: "3px",
+                    transition: "width 0.4s ease",
+                  }} />
+                </div>
+                <span style={{
+                  fontSize: "11px",
+                  fontWeight: "600",
+                  color: "white",
+                  textAlign: "right",
+                }}>
+                  {(prob * 100).toFixed(1)}%
+                </span>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

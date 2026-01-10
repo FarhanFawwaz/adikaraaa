@@ -55,9 +55,9 @@ export const Navbar = () => {
             </Link>
         
               <>
-                <Link to="/dashboard" className={`nav-link ${isActive("/dashboard")}`}>
+                {/* <Link to="/dashboard" className={`nav-link ${isActive("/dashboard")}`}>
                   Dashboard
-                </Link>
+                </Link> */}
                 <a 
                   href="#features" 
                   className="nav-link"

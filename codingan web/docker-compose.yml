@@ -14,7 +14,7 @@ services:
       - mysql_data:/var/lib/mysql
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       timeout: 20s
       retries: 10
 
@@ -38,7 +38,7 @@ services:
       dockerfile: Dockerfile
       target: backend
     working_dir: /app/backend
-    command: ["nodemon", "--legacy-watch", "--exec", "python", "server.py"]
+    command: [ "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload" ]
     volumes:
       - ./backend:/app/backend
       - ./ai:/app/ai
@@ -61,7 +61,7 @@ services:
       dockerfile: Dockerfile
       target: frontend
     working_dir: /app/frontend
-    command: ["npm", "run", "dev", "--", "--host"]
+    command: [ "npm", "run", "dev", "--", "--host" ]
     volumes:
       - ./frontend:/app/frontend
       - /app/frontend/node_modules

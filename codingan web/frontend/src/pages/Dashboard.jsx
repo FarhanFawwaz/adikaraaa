@@ -117,7 +117,7 @@ export const Dashboard = () => {
         .dashboard-grid {
           display: grid;
           grid-template-columns: repeat(6, 1fr);
-          grid-template-rows: auto 1fr 1fr;
+          grid-template-rows: auto 1fr;
           gap: var(--space-6);
           align-items: stretch;
         }
@@ -128,25 +128,25 @@ export const Dashboard = () => {
           grid-row: 1;
         }
 
-        /* Flex Sensors - Row 2-3, Col 1-2 */
-        .flex-card {
-          grid-column: 1 / 3;
-          grid-row: 2 / 4;
-        }
-
-        /* ECG - Row 2-3, Col 3-4 */
+        /* ECG - Row 1, Col 3-6 */
         .ecg-card {
-          grid-column: 3 / 5;
-          grid-row: 2 / 4;
-          min-height: 400px;
+          grid-column: 3 / 7;
+          grid-row: 1;
+          min-height: 250px;
           display: flex;
           flex-direction: column;
         }
 
-        /* Vitals Card - Row 1, Col 3-4 */
+        /* Flex Sensors - Row 2, Col 1-2 */
+        .flex-card {
+          grid-column: 1 / 3;
+          grid-row: 2;
+        }
+
+        /* Vitals Card - Row 2, Col 3-4 */
         .vitals-card-wrapper {
           grid-column: 3 / 5;
-          grid-row: 1;
+          grid-row: 2;
           height: 100%;
         }
 
@@ -154,10 +154,10 @@ export const Dashboard = () => {
           height: 100%;
         }
 
-        /* AI Prediction - Row 2-3, Col 5-6 */
+        /* AI Prediction - Row 2, Col 5-6 */
         .ai-card {
           grid-column: 5 / 7;
-          grid-row: 2 / 4;
+          grid-row: 2;
         }
 
         .dashboard-card {

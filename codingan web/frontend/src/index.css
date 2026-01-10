@@ -4,6 +4,7 @@
 /* Neurorehab Design System */
 @import "./css/main.css";
 @import "./css/landing.css";
+@import "./css/auth.css";
 
 @import "tailwindcss";
 

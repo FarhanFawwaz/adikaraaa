@@ -1,392 +1,547 @@
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-
-const Icons = {
-  Medical: (props) => (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 4v16" />
-      <path d="M4 12h16" />
-    </svg>
-  ),
-  Game: (props) => (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="6" y1="12" x2="10" y2="12" />
-      <line x1="8" y1="10" x2="8" y2="14" />
-      <line x1="15" y1="13" x2="15.01" y2="13" />
-      <line x1="18" y1="11" x2="18.01" y2="11" />
-      <rect x="2" y="6" width="20" height="12" rx="2" />
-    </svg>
-  ),
-  Chart: () => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-12 h-12 text-primary mb-4"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="18" y1="20" x2="18" y2="10" />
-      <line x1="12" y1="20" x2="12" y2="4" />
-      <line x1="6" y1="20" x2="6" y2="14" />
-    </svg>
-  ),
-  Hand: () => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-12 h-12 text-primary mb-4"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M18 11V6a2 2 0 0 0-4 0v5" />
-      <path d="M14 10V4a2 2 0 0 0-4 0v6" />
-      <path d="M10 10.5V2a2 2 0 0 0-4 0v10" />
-      <path d="M6 11V7a2 2 0 0 0-4 0v6c0 5 3.5 9 8 9h4c4 0 7-3.5 7-8v-3z" />
-    </svg>
-  ),
-  Bot: () => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-12 h-12 text-primary mb-4"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="11" width="18" height="10" rx="2" />
-      <circle cx="12" cy="5" r="2" />
-      <path d="M12 7v4" />
-      <line x1="8" y1="16" x2="8" y2="16" />
-      <line x1="16" y1="16" x2="16" y2="16" />
-    </svg>
-  ),
-  IoT: () => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-12 h-12 text-primary mb-4"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M4 17l6-6" />
-      <path d="M20 17l-6-6" />
-      <path d="M12 19V5" />
-      <circle cx="12" cy="5" r="2" />
-      <circle cx="12" cy="19" r="2" />
-    </svg>
-  ),
-  Analytics: () => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-12 h-12 text-primary mb-4"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M3 3v18h18" />
-      <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" />
-    </svg>
-  ),
-  Dev: () => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-16 h-16 text-primary mb-4"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="16 18 22 12 16 6" />
-      <polyline points="8 6 2 12 8 18" />
-    </svg>
-  ),
-  Design: () => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-16 h-16 text-primary mb-4"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 19l7-7 3 3-7 7-3-3z" />
-      <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
-      <path d="M2 2l7.586 7.586" />
-      <circle cx="11" cy="11" r="2" />
-    </svg>
-  ),
-  Research: () => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-16 h-16 text-primary mb-4"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M6 18h8" />
-      <path d="M3 22h18" />
-      <path d="M14 22a7 7 0 1 0 0-14h-1" />
-      <path d="M9 14h2" />
-      <path d="M9 12a2 2 0 0 1-2-2" />
-    </svg>
-  ),
-  Gamepad: () => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="w-12 h-12 text-primary mb-4"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="6" y1="12" x2="10" y2="12" />
-      <line x1="8" y1="10" x2="8" y2="14" />
-      <line x1="15" y1="13" x2="15.01" y2="13" />
-      <line x1="18" y1="11" x2="18.01" y2="11" />
-      <rect x="2" y="6" width="20" height="12" rx="2" />
-    </svg>
-  ),
-};
+import { Navbar } from "../components/Navbar";
 
 export const LandingPage = () => {
+  const typingRef = useRef(null);
+
+  // Typing effect
+  useEffect(() => {
+    const typingTexts = ["Gamifikasi AI", "IoT Pintar", "Rehabilitasi Seru"];
+    let textIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+
+    const type = () => {
+      if (!typingRef.current) return;
+      
+      const currentText = typingTexts[textIndex];
+      
+      if (isDeleting) {
+        typingRef.current.textContent = currentText.substring(0, charIndex - 1);
+        charIndex--;
+      } else {
+        typingRef.current.textContent = currentText.substring(0, charIndex + 1);
+        charIndex++;
+      }
+
+      let typeSpeed = isDeleting ? 50 : 100;
+
+      if (!isDeleting && charIndex === currentText.length) {
+        typeSpeed = 2000;
+        isDeleting = true;
+      } else if (isDeleting && charIndex === 0) {
+        isDeleting = false;
+        textIndex = (textIndex + 1) % typingTexts.length;
+        typeSpeed = 500;
+      }
+
+      setTimeout(type, typeSpeed);
+    };
+
+    type();
+  }, []);
+
+  // Counter animation component
+  const Counter = ({ target, suffix = "" }) => {
+    const [count, setCount] = useState(0);
+    const counterRef = useRef(null);
+    const hasAnimated = useRef(false);
+
+    useEffect(() => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && !hasAnimated.current) {
+              hasAnimated.current = true;
+              const duration = 2000;
+              const increment = target / (duration / 16);
+              let current = 0;
+
+              const updateCounter = () => {
+                current += increment;
+                if (current < target) {
+                  setCount(Math.floor(current));
+                  requestAnimationFrame(updateCounter);
+                } else {
+                  setCount(target);
+                }
+              };
+
+              updateCounter();
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+
+      if (counterRef.current) {
+        observer.observe(counterRef.current);
+      }
+
+      return () => observer.disconnect();
+    }, [target]);
+
+    return (
+      <span ref={counterRef} className="counter">
+        {count}{suffix}
+      </span>
+    );
+  };
+
+  const scrollToSection = (sectionId) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      const navbarHeight = 80;
+      const targetPosition = section.offsetTop - navbarHeight;
+      window.scrollTo({ top: targetPosition, behavior: "smooth" });
+    }
+  };
+
+  const features = [
+    {
+      icon: "fa-gamepad",
+      title: "Gamifikasi Terapi",
+      description: "Latihan fisioterapi berubah jadi game seru! Piano virtual, tangkap buah, dan mini game lainnya membuat rehabilitasi tidak membosankan.",
+      list: ["4+ Game interaktif", "Adaptive difficulty", "Progress tracking"],
+    },
+    {
+      icon: "fa-heartbeat",
+      title: "Monitoring Jantung",
+      description: "Pantau detak jantung dan SpO2 secara real-time dengan sensor medis MAX30102 dan EKG menggunakan AD8232.",
+      list: ["Real-time vitals", "EKG visualization", "Alert system"],
+    },
+    {
+      icon: "fa-brain",
+      title: "AI Aritmia Detection",
+      description: "Algoritma Deep Learning (FCNN) mendeteksi 5 jenis aritmia dengan akurasi 98% berdasarkan MIT-BIH database.",
+      list: ["98% accuracy", "5 jenis denyut", "Early warning"],
+    },
+    {
+      icon: "fa-chart-line",
+      title: "Progress Analytics",
+      description: "Dashboard lengkap untuk pasien dan fisioterapis. Lacak ROM, konsistensi latihan, dan perkembangan dari waktu ke waktu.",
+      list: ["Visual charts", "Compliance tracking", "Goal setting"],
+    },
+    {
+      icon: "fa-shield-halved",
+      title: "Safety First",
+      description: "Sistem auto-pause saat anomali jantung terdeteksi. Notifikasi instant ke keluarga dan tenaga medis.",
+      list: ["Auto-pause game", "Instant alert", "Fatigue detection"],
+    },
+    {
+      icon: "fa-wallet",
+      title: "Harga Terjangkau",
+      description: "Dirancang dengan komponen COTS (Commercial Off-The-Shelf) dengan biaya produksi di bawah Rp 1 juta.",
+      list: ["< Rp 1.000.000", "IoT ready", "Mudah dirawat"],
+    },
+  ];
+
+  const games = [
+    {
+      id: "piano",
+      icon: "fa-music",
+      tag: "Motorik Halus",
+      title: "Finger Piano",
+      description: "Mainkan melodi dengan gerakan jari. Melatih koordinasi jari individual dan timing.",
+      time: "5-7 menit",
+      level: "Pemula - Mahir",
+      gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    },
+    {
+      id: "catch",
+      icon: "fa-apple-alt",
+      tag: "Grip Strength",
+      title: "Fruit Catch",
+      description: "Tangkap buah jatuh dengan menggenggam tangan. Melatih kekuatan dan kecepatan reaksi.",
+      time: "5-8 menit",
+      level: "Mudah - Sedang",
+      gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+    },
+    {
+      id: "memory",
+      icon: "fa-brain",
+      tag: "Kognitif + Motorik",
+      title: "Memory Pattern",
+      description: "Ikuti urutan gerakan jari. Melatih memori kerja dan sequencing motorik.",
+      time: "5-8 menit",
+      level: "Sedang - Sulit",
+      gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+    },
+    {
+      id: "garden",
+      icon: "fa-seedling",
+      tag: "Long-term Engagement",
+      title: "Gardening Simulator",
+      description: "Tanam dan rawat taman virtual. Latihan konsisten membuat tanaman tumbuh indah.",
+      time: "10-15 menit",
+      level: "Semua Level",
+      gradient: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+    },
+  ];
+
   return (
-    <div className="bg-light text-text-dark min-h-screen">
+    <div>
+      {/* Navigation */}
+      <Navbar />
+
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-card-dark to-dark text-white pt-24 pb-20 px-[5%] rounded-br-[100px]">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-16">
-          <div className="flex-1 text-center md:text-left">
-            <h1 className="text-5xl font-bold leading-tight mb-4 bg-gradient-to-br from-accent to-primary bg-clip-text text-transparent">
-              NeuroRehab Glove AI
-            </h1>
-            <h2 className="text-2xl text-slate-400 mb-5 font-light">
-              Rehabilitasi Pasien Stroke dengan Teknologi IoT & AI
-            </h2>
-            <p className="text-lg leading-relaxed text-slate-300 mb-8">
-              Sistem pemantauan dan rehabilitasi berbasis sarung tangan pintar
-              dengan sensor ECG, MAX30102, dan Flex Sensor yang terintegrasi
-              dengan dashboard real-time dan gamifikasi untuk meningkatkan
-              motivasi pasien.
-            </p>
-            <div className="flex gap-5 flex-wrap justify-center md:justify-start">
-              <Link
-                to="/dashboard"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-semibold text-lg bg-gradient-to-br from-primary to-accent text-white shadow-lg shadow-blue-400/30 hover:-translate-y-0.5 hover:shadow-xl transition-all duration-300"
-              >
-                <Icons.Medical className="w-6 h-6" /> Medical Dashboard
-              </Link>
-              <Link
-                to="/games"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-full font-semibold text-lg bg-gradient-to-br from-purple to-purple-400 text-white shadow-lg shadow-purple-500/30 hover:-translate-y-0.5 hover:shadow-xl transition-all duration-300"
-              >
-                <Icons.Game className="w-6 h-6" /> Game Rehabilitasi
-              </Link>
+      <section className="hero" id="home">
+        <div className="hero-background">
+          <div className="gradient-orb orb-1"></div>
+          <div className="gradient-orb orb-2"></div>
+          <div className="gradient-orb orb-3"></div>
+        </div>
+
+        <div className="container">
+          <div className="hero-content">
+            <div className="hero-text">
+              <div className="badge fade-in">
+                <i className="fas fa-trophy"></i>
+                Inovasi Telkom University 2026
+              </div>
+
+              <h1 className="hero-title fade-in-up">
+                Rehabilitasi Stroke
+                <br />
+                <span className="gradient-text">Lebih Cerdas</span> dengan
+                <br />
+                <span className="typing-text" ref={typingRef}>
+                  Gamifikasi AI
+                </span>
+              </h1>
+
+              <p className="hero-description fade-in-up delay-1">
+                Sarung tangan pintar yang mengubah fisioterapi menjadi pengalaman menyenangkan,
+                sambil memantau kesehatan jantung Anda secara real-time dengan teknologi AI.
+              </p>
+
+              <div className="hero-stats fade-in-up delay-2">
+                <div className="stat-item">
+                  <div className="stat-value">
+                    <i className="fas fa-heartbeat"></i>
+                    <Counter target={98} suffix="%" />
+                  </div>
+                  <div className="stat-label">Akurasi Deteksi</div>
+                </div>
+                <div className="stat-item">
+                  <div className="stat-value">
+                    <i className="fas fa-gamepad"></i>
+                    <Counter target={4} suffix="+" />
+                  </div>
+                  <div className="stat-label">Game Terapi</div>
+                </div>
+                <div className="stat-item">
+                  <div className="stat-value">
+                    <i className="fas fa-users"></i>
+                    <Counter target={1000} suffix="+" />
+                  </div>
+                  <div className="stat-label">Target Pengguna</div>
+                </div>
+              </div>
+
+              <div className="hero-actions fade-in-up delay-3">
+                <Link to="/dashboard" className="btn btn-hero">
+                  <i className="fas fa-rocket"></i>
+                  Mulai Rehabilitasi
+                  <span className="btn-glow"></span>
+                </Link>
+                <button className="btn btn-outline-hero" onClick={() => scrollToSection("games")}>
+                  <i className="fas fa-play-circle"></i>
+                  Lihat Demo
+                </button>
+              </div>
+            </div>
+
+            <div className="hero-visual fade-in-right">
+              <div className="glove-showcase">
+                <div className="glove-container">
+                  <img
+                    src="/assets/images/glove-mockup.svg"
+                    alt="NeuroRehab Glove"
+                    className="glove-image"
+                  />
+                  <div className="pulse-ring"></div>
+                  <div className="pulse-ring delay-1"></div>
+                </div>
+
+                {/* Floating Cards */}
+                <div className="floating-card card-1">
+                  <div className="card-icon">
+                    <i className="fas fa-hand-rock"></i>
+                  </div>
+                  <div className="card-text">
+                    <strong>Flex Sensor</strong>
+                    <span>5 Sensor Jari</span>
+                  </div>
+                </div>
+
+                <div className="floating-card card-2">
+                  <div className="card-icon">
+                    <i className="fas fa-heart-pulse"></i>
+                  </div>
+                  <div className="card-text">
+                    <strong>EKG Monitor</strong>
+                    <span>Real-time</span>
+                  </div>
+                </div>
+
+                <div className="floating-card card-3">
+                  <div className="card-icon">
+                    <i className="fas fa-brain"></i>
+                  </div>
+                  <div className="card-text">
+                    <strong>AI Detection</strong>
+                    <span>Aritmia 98%</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="flex-1 flex justify-center items-center">
+        </div>
+
+        <div className="scroll-indicator">
+          <div className="mouse">
+            <div className="wheel"></div>
+          </div>
+          <p>Scroll untuk jelajahi</p>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="features" id="features">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-subtitle">Mengapa Pilih Kami?</span>
+            <h2 className="section-title">
+              Fitur <span className="gradient-text">Unggulan</span>
+            </h2>
+            <p className="section-description">
+              Kombinasi teknologi IoT, AI, dan gamifikasi untuk rehabilitasi yang efektif dan menyenangkan
+            </p>
+          </div>
+
+          <div className="features-grid">
+            {features.map((feature, index) => (
+              <div className="feature-card" key={index} data-aos="fade-up" data-aos-delay={index * 100}>
+                <div className="feature-icon">
+                  <i className={`fas ${feature.icon}`}></i>
+                </div>
+                <h3 className="feature-title">{feature.title}</h3>
+                <p className="feature-description">{feature.description}</p>
+                <ul className="feature-list">
+                  {feature.list.map((item, i) => (
+                    <li key={i}>
+                      <i className="fas fa-check"></i> {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Games Section */}
+      <section className="games-section" id="games">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-subtitle">Latihan Jadi Lebih Seru</span>
+            <h2 className="section-title">
+              Game <span className="gradient-text">Rehabilitasi</span>
+            </h2>
+            <p className="section-description">
+              Setiap game dirancang untuk melatih aspek motorik berbeda dengan cara yang menyenangkan
+            </p>
+          </div>
+
+          <div className="games-showcase">
+            {games.map((game) => (
+              <div className="game-card" key={game.id} data-game={game.id}>
+                <div className="game-image">
+                  <div className="game-preview" style={{ background: game.gradient }}>
+                    <i className={`fas ${game.icon}`}></i>
+                  </div>
+                </div>
+                <div className="game-info">
+                  <div className="game-tag">{game.tag}</div>
+                  <h3 className="game-title">{game.title}</h3>
+                  <p className="game-description">{game.description}</p>
+                  <div className="game-metrics">
+                    <span>
+                      <i className="fas fa-clock"></i> {game.time}
+                    </span>
+                    <span>
+                      <i className="fas fa-signal"></i> {game.level}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Technology Section */}
+      <section className="technology" id="technology">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-subtitle">Powered by Advanced Tech</span>
+            <h2 className="section-title">
+              Teknologi <span className="gradient-text">Di Baliknya</span>
+            </h2>
+          </div>
+
+          <div className="tech-grid">
+            <div className="tech-stack">
+              <h3>Hardware</h3>
+              <div className="tech-items">
+                <div className="tech-item">
+                  <i className="fas fa-microchip"></i>
+                  <span>ESP32 Microcontroller</span>
+                </div>
+                <div className="tech-item">
+                  <i className="fas fa-hand-pointer"></i>
+                  <span>Flex Sensors (5x)</span>
+                </div>
+                <div className="tech-item">
+                  <i className="fas fa-heartbeat"></i>
+                  <span>MAX30102 (SpO2/HR)</span>
+                </div>
+                <div className="tech-item">
+                  <i className="fas fa-wave-square"></i>
+                  <span>AD8232 (EKG)</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="tech-stack">
+              <h3>Software</h3>
+              <div className="tech-items">
+                <div className="tech-item">
+                  <i className="fab fa-python"></i>
+                  <span>TensorFlow (AI Model)</span>
+                </div>
+                <div className="tech-item">
+                  <i className="fas fa-network-wired"></i>
+                  <span>MQTT over WebSocket</span>
+                </div>
+                <div className="tech-item">
+                  <i className="fab fa-js"></i>
+                  <span>JavaScript (Frontend)</span>
+                </div>
+                <div className="tech-item">
+                  <i className="fas fa-database"></i>
+                  <span>MIT-BIH Database</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="tech-diagram">
             <img
-              src="/assets/images/gloves (1).png"
-              alt="Smart Glove"
-              className="max-w-full h-auto drop-shadow-2xl animate-[float_3s_ease-in-out_infinite]"
+              src="/assets/images/system-architecture.svg"
+              alt="System Architecture"
+              className="diagram-image"
             />
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-20 px-[5%] max-w-7xl mx-auto" id="features">
-        <h2 className="text-center text-4xl mb-12 text-dark font-bold">
-          Fitur Utama
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {[
-            {
-              Icon: Icons.Chart,
-              title: "Real-Time Monitoring",
-              desc: "Pemantauan ECG, detak jantung (BPM), dan saturasi oksigen (SpO2) secara real-time",
-            },
-            {
-              Icon: Icons.Hand,
-              title: "Flex Sensor Tracking",
-              desc: "5 sensor fleksibilitas untuk tracking gerakan jari dengan akurasi tinggi",
-            },
-            {
-              Icon: Icons.Gamepad,
-              title: "Gamifikasi",
-              desc: "Game interaktif untuk meningkatkan motivasi dan konsistensi rehabilitasi",
-            },
-            {
-              Icon: Icons.Bot,
-              title: "AI-Powered",
-              desc: "Analisis data menggunakan Machine Learning untuk progress tracking",
-            },
-            {
-              Icon: Icons.IoT,
-              title: "IoT Integration",
-              desc: "Koneksi WebSocket untuk komunikasi real-time antara hardware dan software",
-            },
-            {
-              Icon: Icons.Analytics,
-              title: "Progress Analytics",
-              desc: "Dashboard lengkap dengan visualisasi data dan analitik progress pasien",
-            },
-          ].map((feature, idx) => (
-            <div
-              key={idx}
-              className="bg-white p-8 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 text-center"
-            >
-              <div className="flex justify-center">
-                <feature.Icon />
-              </div>
-              <h3 className="text-xl font-bold mb-4 text-primary">
-                {feature.title}
-              </h3>
-              <p className="text-slate-500 leading-relaxed">{feature.desc}</p>
+      {/* CTA Section */}
+      <section className="cta-section" id="about">
+        <div className="container">
+          <div className="cta-content">
+            <h2 className="cta-title">Siap Memulai Perjalanan Rehabilitasi?</h2>
+            <p className="cta-description">
+              Bergabunglah dengan ribuan pasien yang telah merasakan manfaat rehabilitasi dengan teknologi AI
+            </p>
+            <div className="cta-actions">
+              <Link to="/register" className="btn btn-hero">
+                <i className="fas fa-rocket"></i>
+                Daftar Sekarang Gratis
+              </Link>
+              <button className="btn btn-outline-hero" onClick={() => scrollToSection("features")}>
+                <i className="fas fa-info-circle"></i>
+                Pelajari Lebih Lanjut
+              </button>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Technology Section */}
-      <section className="bg-dark text-white py-20 px-[5%]" id="technology">
-        <h2 className="text-center text-4xl mb-12 font-bold">
-          Teknologi yang Digunakan
-        </h2>
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
-          {[
-            {
-              title: "Hardware",
-              items: [
-                "ESP32 (Microcontroller)",
-                "AD8232 (ECG Sensor)",
-                "MAX30102 (Heart Rate & SpO2)",
-                "Flex Sensors (5x)",
-              ],
-            },
-            {
-              title: "Software",
-              items: [
-                "React.js (Frontend)",
-                "Python WebSocket (Backend)",
-                "TensorFlow/Keras (AI Model)",
-                "Real-time Data Visualization",
-              ],
-            },
-            {
-              title: "Features",
-              items: [
-                "Real-time ECG Monitoring",
-                "Vitals Dashboard",
-                "Interactive Games",
-                "Progress Tracking",
-              ],
-            },
-          ].map((tech, idx) => (
-            <div
-              key={idx}
-              className="bg-white/5 p-8 rounded-2xl border border-white/10"
-            >
-              <h3 className="text-2xl font-semibold mb-5 text-accent">
-                {tech.title}
-              </h3>
-              <ul className="space-y-3">
-                {tech.items.map((item, i) => (
-                  <li
-                    key={i}
-                    className="text-slate-300 border-b border-white/10 pb-2 last:border-0"
-                  >
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Team Section */}
-      <section className="py-20 px-[5%] max-w-7xl mx-auto" id="team">
-        <h2 className="text-center text-4xl mb-12 text-dark font-bold">
-          Tim ADIKARA 2025
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-          {[
-            {
-              Icon: Icons.Dev,
-              title: "Developer Team",
-              role: "Hardware & Software Integration",
-            },
-            {
-              Icon: Icons.Design,
-              title: "Design Team",
-              role: "UI/UX & Product Design",
-            },
-            {
-              Icon: Icons.Research,
-              title: "Research Team",
-              role: "Medical Research & Testing",
-            },
-          ].map((member, idx) => (
-            <div
-              key={idx}
-              className="bg-white p-8 rounded-2xl shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 text-center"
-            >
-              <div className="flex justify-center">
-                <member.Icon />
-              </div>
-              <h3 className="text-xl font-bold mb-2 text-primary">
-                {member.title}
-              </h3>
-              <p className="text-slate-500">{member.role}</p>
-            </div>
-          ))}
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-dark text-white text-center py-8">
-        <p>
-          &copy; 2025 NeuroRehab Glove AI - ADIKARA 2025. All rights reserved.
-        </p>
+      <footer className="footer">
+        <div className="container">
+          <div className="footer-content">
+            <div className="footer-brand">
+              <div className="logo">
+                <i className="fas fa-hand-sparkles"></i>
+                <span>
+                  NeuroRehab<span className="gradient-text">AI</span>
+                </span>
+              </div>
+              <p className="footer-tagline">
+                Rehabilitasi stroke yang lebih cerdas dengan teknologi IoT dan AI
+              </p>
+              <div className="social-links">
+                <a href="#" aria-label="Instagram">
+                  <i className="fab fa-instagram"></i>
+                </a>
+                <a href="#" aria-label="Twitter">
+                  <i className="fab fa-twitter"></i>
+                </a>
+                <a href="#" aria-label="LinkedIn">
+                  <i className="fab fa-linkedin"></i>
+                </a>
+                <a href="#" aria-label="YouTube">
+                  <i className="fab fa-youtube"></i>
+                </a>
+              </div>
+            </div>
+
+            <div className="footer-links">
+              <div className="footer-column">
+                <h4>Produk</h4>
+                <a href="#features" onClick={(e) => handleNavClick(e, "features")}>
+                  Fitur
+                </a>
+                <a href="#games" onClick={(e) => handleNavClick(e, "games")}>
+                  Game Terapi
+                </a>
+                <a href="#technology" onClick={(e) => handleNavClick(e, "technology")}>
+                  Teknologi
+                </a>
+                <Link to="/dashboard">Dashboard Pasien</Link>
+              </div>
+
+              <div className="footer-column">
+                <h4>Perusahaan</h4>
+                <a href="#about" onClick={(e) => handleNavClick(e, "about")}>
+                  Tentang Kami
+                </a>
+                <a href="#team">Tim</a>
+                <a href="#contact">Kontak</a>
+                <a href="#careers">Karir</a>
+              </div>
+
+              <div className="footer-column">
+                <h4>Dukungan</h4>
+                <a href="#faq">FAQ</a>
+                <a href="#docs">Dokumentasi</a>
+                <a href="#privacy">Kebijakan Privasi</a>
+                <a href="#terms">Syarat &amp; Ketentuan</a>
+              </div>
+            </div>
+          </div>
+
+          <div className="footer-bottom">
+            <p>&copy; 2026 NeuroRehab Glove AI - Pop Mie Dower, Telkom University. All rights reserved.</p>
+            <p className="footer-attribution">
+              <i className="fas fa-trophy"></i> Inovasi SDGs Batch 2026
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
   );

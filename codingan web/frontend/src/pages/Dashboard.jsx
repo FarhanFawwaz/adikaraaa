@@ -4,6 +4,7 @@ import { ECGChart } from "../components/ECGChart";
 import { VitalsCard } from "../components/VitalsCard";
 import { FlexSensors } from "../components/FlexSensors";
 import { AIPredictionCard } from "../components/AIPredictionCard";
+import { HealthAlertCard } from "../components/HealthAlertCard";
 import { Navbar } from "../components/Navbar";
 
 export const Dashboard = () => {
@@ -52,7 +53,7 @@ export const Dashboard = () => {
               </div>
             </div>
 
-            {/* Vitals Card - Row 1, Col 3-4 */}
+            {/* Vitals Card - Row 2, Col 3-4 */}
             <div className="vitals-card-wrapper">
               <VitalsCard vitalsData={vitalsData} isConnected={isConnected} />
             </div>
@@ -88,6 +89,11 @@ export const Dashboard = () => {
                 </div>
                 <ECGChart ecgData={ecgData} isConnected={isConnected} />
               </div>
+            </div>
+
+            {/* Health Alert Card - Row 3, Col 3-4 */}
+            <div className="health-alert-wrapper">
+              <HealthAlertCard vitalsData={vitalsData} isConnected={isConnected} />
             </div>
 
             {/* AI Prediction - Row 2-3, Col 5-6 */}
@@ -137,10 +143,10 @@ export const Dashboard = () => {
           flex-direction: column;
         }
 
-        /* Flex Sensors - Row 2, Col 1-2 */
+        /* Flex Sensors - Row 2-3, Col 1-2 */
         .flex-card {
           grid-column: 1 / 3;
-          grid-row: 2;
+          grid-row: 2 / 4;
         }
 
         /* Vitals Card - Row 2, Col 3-4 */
@@ -154,10 +160,16 @@ export const Dashboard = () => {
           height: 100%;
         }
 
-        /* AI Prediction - Row 2, Col 5-6 */
+        /* Health Alert Card - Row 3, Col 3-4 */
+        .health-alert-wrapper {
+          grid-column: 3 / 5;
+          grid-row: 3;
+        }
+
+        /* AI Prediction - Row 2-3, Col 5-6 */
         .ai-card {
           grid-column: 5 / 7;
-          grid-row: 2;
+          grid-row: 2 / 4;
         }
 
         .dashboard-card {
@@ -310,6 +322,7 @@ export const Dashboard = () => {
           .flex-card,
           .ecg-card,
           .vitals-card-wrapper,
+          .health-alert-wrapper,
           .ai-card {
             grid-column: auto;
             grid-row: auto;

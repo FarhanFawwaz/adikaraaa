@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { registerUser } from "../services/authService";
+import { HealthProfileModal } from "../components/HealthProfileModal";
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ export const RegisterPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showHealthModal, setShowHealthModal] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -54,13 +56,30 @@ export const RegisterPage = () => {
         formData.password,
         formData.role
       );
-      navigate("/dashboard");
+      
+      // Show health profile modal only for patients
+      if (formData.role === "patient") {
+        setShowHealthModal(true);
+      } else {
+        navigate("/dashboard");
+      }
     } catch (err) {
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleHealthModalComplete = () => {
+    setShowHealthModal(false);
+    navigate("/dashboard");
+  };
+
+  const handleHealthModalSkip = () => {
+    setShowHealthModal(false);
+    navigate("/dashboard");
+  };
+
 
   return (
     <div className="auth-container">
@@ -278,6 +297,13 @@ export const RegisterPage = () => {
           </Link>
         </div>
       </div>
+
+      {/* Health Profile Modal */}
+      <HealthProfileModal
+        isOpen={showHealthModal}
+        onClose={handleHealthModalSkip}
+        onComplete={handleHealthModalComplete}
+      />
     </div>
   );
 };

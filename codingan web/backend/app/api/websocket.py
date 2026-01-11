@@ -1,5 +1,6 @@
 """
 WebSocket Handler for Real-time Data
+Integrated with AI ECG Prediction
 """
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 import asyncio
@@ -7,8 +8,37 @@ import json
 import random
 import math
 import time
+import sys
+import os
+from concurrent.futures import ThreadPoolExecutor
 
 router = APIRouter()
+
+# Add ai folder to path for import
+backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+project_root = os.path.dirname(backend_dir)
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# Initialize AI Predictor
+AI_AVAILABLE = False
+predictor = None
+ai_executor = ThreadPoolExecutor(max_workers=1)
+
+try:
+    print("[WebSocket] 🚀 Loading AI Model...", flush=True)
+    from ai.predict import ECGPredictor
+    predictor = ECGPredictor()
+    
+    if predictor.model is not None:
+        AI_AVAILABLE = True
+        print("[WebSocket] ✅ AI Model loaded successfully!", flush=True)
+    else:
+        print("[WebSocket] ⚠️ AI Model failed to load, using mock", flush=True)
+except ImportError as e:
+    print(f"[WebSocket] ⚠️ Failed to import AI module: {e}", flush=True)
+except Exception as e:
+    print(f"[WebSocket] ❌ Error initializing AI: {e}", flush=True)
 
 
 class ConnectionManager:
@@ -22,7 +52,8 @@ class ConnectionManager:
         self.active_connections.append(websocket)
     
     def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
     
     async def send_json(self, websocket: WebSocket, data: dict):
         await websocket.send_json(data)
@@ -97,20 +128,36 @@ def generate_vitals() -> dict:
     }
 
 
+def run_ai_prediction(ecg_buffer: list, sampling_rate: int = 50) -> dict:
+    """Run AI prediction synchronously (for executor)"""
+    if AI_AVAILABLE and predictor:
+        try:
+            result = predictor.predict(ecg_buffer, fs=sampling_rate)
+            return result
+        except Exception as e:
+            print(f"[AI] Prediction error: {e}", flush=True)
+            return None
+    return None
+
+
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    """WebSocket endpoint for real-time data streaming"""
+    """WebSocket endpoint for real-time data streaming with AI"""
     await manager.connect(websocket)
     
     local_time = 0
     ecg_buffer = []
+    SAMPLING_RATE = 50  # Hz
     
     try:
         # Send connection confirmation
         await websocket.send_json({
             'type': 'info',
-            'message': 'Connected to NeuroRehab WebSocket'
+            'message': 'Connected to NeuroRehab WebSocket',
+            'ai_enabled': AI_AVAILABLE
         })
+        
+        print(f"[WebSocket] Client connected, AI: {'Enabled' if AI_AVAILABLE else 'Disabled'}", flush=True)
         
         while True:
             current_timestamp = time.time()
@@ -123,12 +170,12 @@ async def websocket_endpoint(websocket: WebSocket):
                 'timestamp': current_timestamp
             })
             
-            # Buffer for AI
+            # Buffer for AI (keep last 30 seconds = 1500 samples at 50Hz)
             ecg_buffer.append(ecg_val)
-            if len(ecg_buffer) > 3000:
+            if len(ecg_buffer) > 1500:
                 del ecg_buffer[:100]
             
-            # 2. Flex sensors (every 0.5s)
+            # 2. Flex sensors (every 0.5s = 25 ticks)
             if local_time % 25 == 0:
                 await websocket.send_json({
                     'type': 'flex',
@@ -136,7 +183,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     'timestamp': current_timestamp
                 })
             
-            # 3. Vitals (every 1s)
+            # 3. Vitals (every 1s = 50 ticks)
             if local_time % 50 == 0:
                 await websocket.send_json({
                     'type': 'vitals',
@@ -144,28 +191,73 @@ async def websocket_endpoint(websocket: WebSocket):
                     'timestamp': current_timestamp
                 })
             
-            # 4. AI Prediction (every 2s) - Mock
-            if local_time % 100 == 0 and len(ecg_buffer) > 100:
-                await websocket.send_json({
-                    'type': 'prediction',
-                    'data': {
-                        'prediction_label': 'N (Normal)',
-                        'confidence': random.uniform(0.92, 0.99),
-                        'all_probabilities': {
-                            'N (Normal)': random.uniform(0.90, 0.98),
-                            'A (AFib)': random.uniform(0.01, 0.05),
-                            'O (Other)': random.uniform(0.01, 0.03),
-                            '~ (Noisy)': random.uniform(0.00, 0.02)
-                        }
-                    },
-                    'timestamp': current_timestamp
-                })
+            # 4. AI Prediction (every 3s = 150 ticks)
+            if local_time % 150 == 0 and len(ecg_buffer) > 500:
+                if AI_AVAILABLE:
+                    # Run AI prediction in executor to avoid blocking
+                    loop = asyncio.get_running_loop()
+                    snapshot = list(ecg_buffer)  # Copy buffer
+                    
+                    try:
+                        result = await loop.run_in_executor(
+                            ai_executor,
+                            run_ai_prediction,
+                            snapshot,
+                            SAMPLING_RATE
+                        )
+                        
+                        if result and 'error' not in result:
+                            await websocket.send_json({
+                                'type': 'prediction',
+                                'data': result,
+                                'timestamp': current_timestamp,
+                                'ai_type': 'real'
+                            })
+                            print(f"[AI] Prediction: {result.get('prediction_label')} ({result.get('confidence', 0)*100:.1f}%)", flush=True)
+                        else:
+                            # Send mock if AI fails
+                            await websocket.send_json({
+                                'type': 'prediction',
+                                'data': {
+                                    'prediction_label': 'N (Normal)',
+                                    'confidence': random.uniform(0.92, 0.99),
+                                    'all_probabilities': {
+                                        'N (Normal)': random.uniform(0.90, 0.98),
+                                        'A (AFib)': random.uniform(0.01, 0.05),
+                                        'O (Other)': random.uniform(0.01, 0.03),
+                                        '~ (Noisy)': random.uniform(0.00, 0.02)
+                                    }
+                                },
+                                'timestamp': current_timestamp,
+                                'ai_type': 'mock'
+                            })
+                    except Exception as e:
+                        print(f"[AI] Error: {e}", flush=True)
+                else:
+                    # Mock prediction if AI not available
+                    await websocket.send_json({
+                        'type': 'prediction',
+                        'data': {
+                            'prediction_label': 'N (Normal)',
+                            'confidence': random.uniform(0.92, 0.99),
+                            'all_probabilities': {
+                                'N (Normal)': random.uniform(0.90, 0.98),
+                                'A (AFib)': random.uniform(0.01, 0.05),
+                                'O (Other)': random.uniform(0.01, 0.03),
+                                '~ (Noisy)': random.uniform(0.00, 0.02)
+                            }
+                        },
+                        'timestamp': current_timestamp,
+                        'ai_type': 'mock'
+                    })
             
             local_time += 1
             await asyncio.sleep(0.02)  # 50Hz
             
     except WebSocketDisconnect:
+        print("[WebSocket] Client disconnected", flush=True)
         manager.disconnect(websocket)
     except Exception as e:
-        print(f"WebSocket error: {e}")
+        print(f"[WebSocket] Error: {e}", flush=True)
         manager.disconnect(websocket)
+

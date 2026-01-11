@@ -44,8 +44,8 @@ export const Navbar = () => {
     }
   };
 
-  const handleLogout = () => {
-    logoutUser();
+  const handleLogout = async () => {
+    await logoutUser();
     setUser(null);
     setShowDropdown(false);
     navigate("/");

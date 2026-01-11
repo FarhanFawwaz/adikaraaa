@@ -1,8 +1,9 @@
 """
 Authentication Routes
 Integrated with MySQL database
+Using httpOnly cookies for secure authentication
 """
-from fastapi import APIRouter, HTTPException, Depends, status
+from fastapi import APIRouter, HTTPException, Depends, status, Response, Request, Cookie
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
@@ -20,7 +21,11 @@ from app.utils.auth import (
 from app.config import settings
 
 router = APIRouter()
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
+
+# Cookie settings
+COOKIE_NAME = "access_token"
+COOKIE_MAX_AGE = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60  # Convert to seconds
 
 
 # ============================================
@@ -41,11 +46,11 @@ class UserRegister(BaseModel):
     role: str = "patient"
 
 
-class TokenResponse(BaseModel):
-    """Token response model"""
-    access_token: str
-    token_type: str = "bearer"
-    user: dict
+class AuthResponse(BaseModel):
+    """Auth response model"""
+    success: bool
+    message: str
+    user: Optional[dict] = None
 
 
 class UserResponse(BaseModel):
@@ -58,12 +63,59 @@ class UserResponse(BaseModel):
 
 
 # ============================================
+# Helper Functions
+# ============================================
+
+def set_auth_cookie(response: Response, token: str):
+    """Set httpOnly cookie with JWT token"""
+    response.set_cookie(
+        key=COOKIE_NAME,
+        value=token,
+        max_age=COOKIE_MAX_AGE,
+        httponly=True,  # Cannot be accessed by JavaScript
+        secure=False,   # Set to True in production with HTTPS
+        samesite="lax", # CSRF protection
+        path="/"
+    )
+
+
+def delete_auth_cookie(response: Response):
+    """Delete auth cookie"""
+    response.delete_cookie(
+        key=COOKIE_NAME,
+        path="/"
+    )
+
+
+async def get_current_user_from_cookie(
+    request: Request,
+    db: Session = Depends(get_db)
+) -> Optional[User]:
+    """Extract user from httpOnly cookie"""
+    token = request.cookies.get(COOKIE_NAME)
+    
+    if not token:
+        return None
+    
+    payload = decode_access_token(token)
+    if not payload:
+        return None
+    
+    user_id = payload.get("sub")
+    if not user_id:
+        return None
+    
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    return user
+
+
+# ============================================
 # Routes
 # ============================================
 
-@router.post("/register", response_model=TokenResponse)
-async def register(data: UserRegister, db: Session = Depends(get_db)):
-    """Register new user"""
+@router.post("/register", response_model=AuthResponse)
+async def register(data: UserRegister, response: Response, db: Session = Depends(get_db)):
+    """Register new user and set auth cookie"""
     
     # Check if email already exists
     existing_user = db.query(User).filter(User.email == data.email).first()
@@ -99,8 +151,12 @@ async def register(data: UserRegister, db: Session = Depends(get_db)):
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     
-    return TokenResponse(
-        access_token=access_token,
+    # Set httpOnly cookie
+    set_auth_cookie(response, access_token)
+    
+    return AuthResponse(
+        success=True,
+        message="Registrasi berhasil",
         user={
             "id": new_user.id,
             "name": new_user.name,
@@ -110,9 +166,9 @@ async def register(data: UserRegister, db: Session = Depends(get_db)):
     )
 
 
-@router.post("/login", response_model=TokenResponse)
-async def login(data: UserLogin, db: Session = Depends(get_db)):
-    """Login user and return JWT token"""
+@router.post("/login", response_model=AuthResponse)
+async def login(data: UserLogin, response: Response, db: Session = Depends(get_db)):
+    """Login user and set auth cookie"""
     
     # Find user by email
     user = db.query(User).filter(User.email == data.email).first()
@@ -143,8 +199,12 @@ async def login(data: UserLogin, db: Session = Depends(get_db)):
         expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
     
-    return TokenResponse(
-        access_token=access_token,
+    # Set httpOnly cookie
+    set_auth_cookie(response, access_token)
+    
+    return AuthResponse(
+        success=True,
+        message="Login berhasil",
         user={
             "id": user.id,
             "name": user.name,
@@ -154,41 +214,55 @@ async def login(data: UserLogin, db: Session = Depends(get_db)):
     )
 
 
-@router.get("/me", response_model=UserResponse)
-async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    db: Session = Depends(get_db)
-):
-    """Get current user info from token"""
+@router.get("/me", response_model=AuthResponse)
+async def get_me(request: Request, db: Session = Depends(get_db)):
+    """Get current user info from cookie"""
     
-    token = credentials.credentials
-    payload = decode_access_token(token)
-    
-    if not payload:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token tidak valid atau kedaluwarsa"
-        )
-    
-    user_id = payload.get("sub")
-    user = db.query(User).filter(User.id == int(user_id)).first()
+    user = await get_current_user_from_cookie(request, db)
     
     if not user:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User tidak ditemukan"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Tidak terautentikasi"
         )
     
-    return UserResponse(
-        id=user.id,
-        name=user.name,
-        email=user.email,
-        role=user.role,
-        is_active=user.is_active
+    return AuthResponse(
+        success=True,
+        message="User authenticated",
+        user={
+            "id": user.id,
+            "name": user.name,
+            "email": user.email,
+            "role": user.role
+        }
     )
 
 
-@router.post("/logout")
-async def logout():
-    """Logout user (client-side token removal)"""
-    return {"message": "Logout berhasil"}
+@router.post("/logout", response_model=AuthResponse)
+async def logout(response: Response):
+    """Logout user by deleting auth cookie"""
+    delete_auth_cookie(response)
+    return AuthResponse(
+        success=True,
+        message="Logout berhasil"
+    )
+
+
+@router.get("/check")
+async def check_auth(request: Request, db: Session = Depends(get_db)):
+    """Check if user is authenticated (for frontend)"""
+    user = await get_current_user_from_cookie(request, db)
+    
+    if user:
+        return {
+            "authenticated": True,
+            "user": {
+                "id": user.id,
+                "name": user.name,
+                "email": user.email,
+                "role": user.role
+            }
+        }
+    
+    return {"authenticated": False, "user": None}
+

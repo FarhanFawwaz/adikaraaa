@@ -6,6 +6,7 @@ import { GamesHub } from "./pages/GamesHub";
 import { BirdGame } from "./pages/BirdGame";
 import { LevelsGame } from "./pages/LevelsGame";
 import { FingerPiano } from "./pages/FingerPiano";
+import { MemoryPattern } from "./pages/MemoryPattern";
 import { DailyExerciseDetail } from "./pages/DailyExerciseDetail";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -31,6 +32,7 @@ function App() {
         <Route path="/game/bird" element={<BirdGame />} />
         <Route path="/game/levels" element={<LevelsGame />} />
         <Route path="/game/piano" element={<FingerPiano />} />
+        <Route path="/game/memory" element={<MemoryPattern />} />
       </Routes>
     </Router>
   );

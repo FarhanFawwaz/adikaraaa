@@ -1,21 +1,14 @@
 import { useState, useEffect } from "react";
 
 export const VitalsCard = ({ vitalsData, isConnected }) => {
-  const [bpm, setBpm] = useState(72);
-  const [spo2, setSpo2] = useState(98);
+  const [bpm, setBpm] = useState(null);
+  const [spo2, setSpo2] = useState(null);
 
   useEffect(() => {
+    // Hanya update jika ada data dari WebSocket
     if (isConnected && vitalsData?.data) {
       setBpm(vitalsData.data.bpm);
       setSpo2(vitalsData.data.spo2);
-    } else {
-      // Fallback simulation
-      const interval = setInterval(() => {
-        setBpm(Math.floor(Math.random() * (90 - 65 + 1) + 65));
-        setSpo2(Math.floor(Math.random() * (99 - 96 + 1) + 96));
-      }, 2000);
-
-      return () => clearInterval(interval);
     }
   }, [vitalsData, isConnected]);
 
@@ -35,10 +28,17 @@ export const VitalsCard = ({ vitalsData, isConnected }) => {
           <circle cx="12" cy="12.5" r="2.5" />
         </svg>
         <div className="text-slate-400 text-sm mb-2">Heart Rate</div>
-        <div className="text-text-light text-4xl font-bold mb-1 animate-pulse">
-          {bpm}
+        <div
+          className={`text-text-light text-4xl font-bold mb-1 ${
+            bpm ? "animate-pulse" : ""
+          }`}
+        >
+          {bpm !== null ? bpm : "--"}
         </div>
         <div className="text-slate-500 text-xs">BPM</div>
+        {!isConnected && (
+          <div className="text-red-400 text-xs mt-2">Disconnected</div>
+        )}
       </div>
 
       <div className="bg-card-dark rounded-xl p-5 text-center border border-white/5 shadow-md">
@@ -55,8 +55,13 @@ export const VitalsCard = ({ vitalsData, isConnected }) => {
           <path d="M12 22c4-2 8-7.5 8-10a8 8 0 1 0-16 0c0 2.5 4 8 8 10z" />
         </svg>
         <div className="text-slate-400 text-sm mb-2">Oxygen</div>
-        <div className="text-text-light text-4xl font-bold mb-1">{spo2}%</div>
+        <div className="text-text-light text-4xl font-bold mb-1">
+          {spo2 !== null ? `${spo2}%` : "--"}
+        </div>
         <div className="text-slate-500 text-xs">SpO2</div>
+        {!isConnected && (
+          <div className="text-red-400 text-xs mt-2">Disconnected</div>
+        )}
       </div>
     </div>
   );

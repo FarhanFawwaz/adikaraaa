@@ -6,6 +6,7 @@ import { FlexSensors } from "../components/FlexSensors";
 import { AIPredictionCard } from "../components/AIPredictionCard";
 import { HealthAlertCard } from "../components/HealthAlertCard";
 import { Navbar } from "../components/Navbar";
+import { PatientInfoCard } from "../components/PatientInfoCard";
 
 export const Dashboard = () => {
   const { isConnected, ecgData, flexData, vitalsData, predictionData } =
@@ -22,36 +23,7 @@ export const Dashboard = () => {
           {/* Dashboard Grid */}
           <div className="dashboard-grid">
             {/* Patient Info Card - Row 1, Col 1-2 */}
-            <div className="card dashboard-card patient-card">
-              <div className="card-header">
-                <h3 className="card-title">
-                  <i className="fas fa-user"></i>
-                  Informasi Pasien
-                </h3>
-              </div>
-              <div className="patient-info">
-                <div className="patient-left">
-                  <div className="patient-avatar">
-                    <i className="fas fa-user-circle"></i>
-                  </div>
-                  <h2 className="patient-name">Patient Name</h2>
-                </div>
-                <div className="patient-details">
-                  <div className="patient-detail-item">
-                    <span className="detail-label">ID:</span>
-                    <span className="detail-value">P-2025-001</span>
-                  </div>
-                  <div className="patient-detail-item">
-                    <span className="detail-label">Usia:</span>
-                    <span className="detail-value">45 Tahun</span>
-                  </div>
-                  <div className="patient-detail-item">
-                    <span className="detail-label">Sesi:</span>
-                    <span className="detail-value">Rehabilitasi #12</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <PatientInfoCard />
 
             {/* Vitals Card - Row 2, Col 3-4 */}
             <div className="vitals-card-wrapper">
@@ -76,9 +48,13 @@ export const Dashboard = () => {
                   <i className="fas fa-heartbeat"></i>
                   ECG Monitor (AD8232)
                 </h3>
-                <div className={`connection-badge ${isConnected ? 'connected' : 'disconnected'}`}>
+                <div
+                  className={`connection-badge ${
+                    isConnected ? "connected" : "disconnected"
+                  }`}
+                >
                   <span className="status-dot"></span>
-                  {isConnected ? 'Live' : 'Offline'}
+                  {isConnected ? "Live" : "Offline"}
                 </div>
               </div>
               <div className="ecg-container">
@@ -93,7 +69,10 @@ export const Dashboard = () => {
 
             {/* Health Alert Card - Row 3, Col 3-4 */}
             <div className="health-alert-wrapper">
-              <HealthAlertCard vitalsData={vitalsData} isConnected={isConnected} />
+              <HealthAlertCard
+                vitalsData={vitalsData}
+                isConnected={isConnected}
+              />
             </div>
 
             {/* AI Prediction - Row 2-3, Col 5-6 */}
@@ -228,65 +207,6 @@ export const Dashboard = () => {
           animation: pulse 2s infinite;
         }
 
-        /* Patient Info */
-        .patient-info {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: var(--space-6);
-        }
-
-        .patient-left {
-          text-align: center;
-        }
-
-        .patient-avatar {
-          width: 80px;
-          height: 80px;
-          margin: 0 auto var(--space-4);
-          background: linear-gradient(135deg, var(--primary-500), var(--accent-purple));
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .patient-avatar i {
-          font-size: 40px;
-          color: white;
-        }
-
-        .patient-name {
-          font-size: var(--text-xl);
-          font-weight: 700;
-          color: white;
-        }
-
-        .patient-details {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-3);
-        }
-
-        .patient-detail-item {
-          display: flex;
-          justify-content: space-between;
-          gap: var(--space-8);
-          padding: var(--space-3);
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: var(--radius-lg);
-        }
-
-        .detail-label {
-          color: var(--gray-400);
-          font-size: var(--text-sm);
-        }
-
-        .detail-value {
-          color: white;
-          font-weight: 600;
-        }
-
         /* ECG */
         .ecg-container {
           flex: 1;
@@ -346,10 +266,6 @@ export const Dashboard = () => {
           .ecg-card {
             grid-column: span 1;
             min-height: 300px;
-          }
-
-          .patient-info {
-            flex-direction: column;
           }
         }
       `}</style>

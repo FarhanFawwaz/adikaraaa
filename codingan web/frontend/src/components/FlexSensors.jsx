@@ -2,29 +2,17 @@ import { useState, useEffect } from "react";
 
 export const FlexSensors = ({ flexData, isConnected }) => {
   const [fingers, setFingers] = useState({
-    thumb: 0,
-    index: 0,
-    middle: 0,
-    ring: 0,
-    pinky: 0,
+    thumb: null,
+    index: null,
+    middle: null,
+    ring: null,
+    pinky: null,
   });
 
   useEffect(() => {
+    // Hanya update jika ada data dari WebSocket
     if (isConnected && flexData?.values) {
       setFingers(flexData.values);
-    } else {
-      // Fallback simulation
-      const interval = setInterval(() => {
-        setFingers({
-          thumb: Math.floor(Math.random() * 100),
-          index: Math.floor(Math.random() * 100),
-          middle: Math.floor(Math.random() * 100),
-          ring: Math.floor(Math.random() * 100),
-          pinky: Math.floor(Math.random() * 100),
-        });
-      }, 1000);
-
-      return () => clearInterval(interval);
     }
   }, [flexData, isConnected]);
 
@@ -115,21 +103,32 @@ export const FlexSensors = ({ flexData, isConnected }) => {
         {fingerNames.map(({ key, label }) => (
           <div key={key} className="text-center flex-1">
             <div className="w-full h-64 bg-dark rounded-lg flex items-end overflow-hidden relative">
-              <div
-                className={`w-full transition-all duration-300 rounded-t-lg ${
-                  fingers[key] > 80
-                    ? "bg-purple"
-                    : "bg-gradient-to-t from-primary to-blue-400"
-                }`}
-                style={{ height: `${fingers[key]}%` }}
-              />
+              {fingers[key] !== null ? (
+                <div
+                  className={`w-full transition-all duration-300 rounded-t-lg ${
+                    fingers[key] > 80
+                      ? "bg-purple"
+                      : "bg-gradient-to-t from-primary to-blue-400"
+                  }`}
+                  style={{ height: `${fingers[key]}%` }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-slate-600 text-2xl">--</span>
+                </div>
+              )}
             </div>
             <div className="text-slate-400 text-xs mt-2 font-mono">
-              {fingers[key]}%
+              {fingers[key] !== null ? `${fingers[key]}%` : '--'}
             </div>
           </div>
         ))}
       </div>
+      {!isConnected && (
+        <div className="text-center text-red-400 text-sm mt-4">
+          Sensor disconnected - Waiting for data...
+        </div>
+      )}
     </div>
   );
 };

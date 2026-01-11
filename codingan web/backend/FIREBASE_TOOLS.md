@@ -8,8 +8,9 @@ Dokumentasi untuk tools yang digunakan untuk fetch dan monitor data dari Firebas
 backend/
 ├── app/services/
 │   └── firebase_service.py      # Service class untuk Firebase (Python)
-├── fetch_firebase.sh             # Script fetch sekali (Bash)
-└── monitor_firebase.sh           # Script monitoring real-time (Bash)
+└── scripts/
+    ├── fetch_firebase.sh         # Script fetch sekali (Bash)
+    └── monitor_firebase.sh       # Script monitoring real-time (Bash)
 ```
 
 ---
@@ -57,7 +58,7 @@ python3 -m app.services.firebase_service
 
 ### 2. **fetch_firebase.sh** (Bash Script)
 
-**Lokasi**: `backend/fetch_firebase.sh`
+**Lokasi**: `backend/scripts/fetch_firebase.sh`
 
 Script untuk fetch data Firebase satu kali dan menampilkan dengan format rapi.
 
@@ -71,7 +72,7 @@ Script untuk fetch data Firebase satu kali dan menampilkan dengan format rapi.
 #### Usage:
 
 ```bash
-cd backend
+cd backend/scripts
 ./fetch_firebase.sh
 ```
 
@@ -109,7 +110,7 @@ cd backend
 
 ### 3. **monitor_firebase.sh** (Real-Time Monitoring)
 
-**Lokasi**: `backend/monitor_firebase.sh`
+**Lokasi**: `backend/scripts/monitor_firebase.sh`
 
 Script untuk monitoring data Firebase secara real-time dengan auto-refresh.
 
@@ -124,7 +125,7 @@ Script untuk monitoring data Firebase secara real-time dengan auto-refresh.
 #### Usage:
 
 ```bash
-cd backend
+cd backend/scripts
 
 # Default (refresh setiap 2 detik)
 ./monitor_firebase.sh

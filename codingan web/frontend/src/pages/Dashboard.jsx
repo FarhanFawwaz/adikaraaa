@@ -80,6 +80,7 @@ export const Dashboard = () => {
               <HealthAlertCard
                 vitalsData={vitalsData}
                 isConnected={isConnected}
+                isFirebaseConnected={isFirebaseConnected}
               />
             </div>
 

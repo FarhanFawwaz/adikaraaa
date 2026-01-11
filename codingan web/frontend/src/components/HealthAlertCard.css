@@ -1,0 +1,331 @@
+/* ============================================
+   Health Alert Card Styles
+   ============================================ */
+
+.health-alert-card {
+    background: rgba(30, 41, 59, 0.9);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.alert-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.alert-header h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+}
+
+.alert-header h3 i {
+    color: #f472b6;
+    font-size: 1.2rem;
+}
+
+.age-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: rgba(102, 126, 234, 0.2);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #a5b4fc;
+}
+
+.age-badge i {
+    font-size: 0.75rem;
+}
+
+.alert-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Alert Item */
+.alert-item {
+    display: flex;
+    gap: 14px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.alert-item.green {
+    border-color: rgba(16, 185, 129, 0.3);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.alert-item.orange {
+    border-color: rgba(251, 146, 60, 0.4);
+    background: rgba(251, 146, 60, 0.08);
+}
+
+.alert-item.red {
+    border-color: rgba(239, 68, 68, 0.5);
+    background: rgba(239, 68, 68, 0.1);
+    animation: alertPulse 2s infinite;
+}
+
+@keyframes alertPulse {
+    0%, 100% { 
+        border-color: rgba(239, 68, 68, 0.5);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+    50% { 
+        border-color: rgba(239, 68, 68, 0.8);
+        box-shadow: 0 0 20px 0 rgba(239, 68, 68, 0.2);
+    }
+}
+
+.alert-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #ef4444, #f97316);
+    border-radius: 12px;
+    flex-shrink: 0;
+}
+
+.alert-icon-wrapper.spo2 {
+    background: linear-gradient(135deg, #3b82f6, #06b6d4);
+}
+
+.alert-icon-wrapper i {
+    font-size: 1.4rem;
+    color: white;
+}
+
+.alert-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.alert-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.alert-label span:first-child {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.current-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: white;
+}
+
+.alert-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.alert-status i {
+    font-size: 0.9rem;
+}
+
+.alert-status.green {
+    color: #10b981;
+}
+
+.alert-status.orange {
+    color: #fb923c;
+}
+
+.alert-status.red {
+    color: #ef4444;
+}
+
+.alert-status.gray {
+    color: #9ca3af;
+}
+
+.normal-range {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 2px;
+}
+
+/* Warning Banner */
+.warning-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 12px;
+    margin-top: auto;
+}
+
+.warning-banner.warning {
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.15), rgba(234, 179, 8, 0.1));
+    border: 1px solid rgba(251, 146, 60, 0.3);
+}
+
+.warning-banner.critical {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(185, 28, 28, 0.15));
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    animation: criticalBanner 1.5s infinite;
+}
+
+@keyframes criticalBanner {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.85; }
+}
+
+.warning-banner i {
+    font-size: 1.2rem;
+    margin-top: 2px;
+}
+
+.warning-banner.warning i {
+    color: #fb923c;
+}
+
+.warning-banner.critical i {
+    color: #ef4444;
+}
+
+.warning-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.warning-text strong {
+    font-size: 0.9rem;
+    color: white;
+}
+
+.warning-text span {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.4;
+}
+
+/* All Normal Banner */
+.all-normal-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 182, 212, 0.1));
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 12px;
+    margin-top: auto;
+}
+
+.all-normal-banner i {
+    font-size: 1.1rem;
+    color: #10b981;
+}
+
+.all-normal-banner span {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #10b981;
+}
+
+/* Offline Overlay */
+.offline-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border-radius: 20px;
+}
+
+.offline-overlay i {
+    font-size: 2rem;
+    color: #6b7280;
+    animation: plugBlink 2s infinite;
+}
+
+@keyframes plugBlink {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+.offline-overlay span {
+    font-size: 0.9rem;
+    color: #9ca3af;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .health-alert-card {
+        padding: 16px;
+    }
+    
+    .alert-item {
+        padding: 12px;
+    }
+    
+    .alert-icon-wrapper {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .alert-icon-wrapper i {
+        font-size: 1.1rem;
+    }
+    
+    .current-value {
+        font-size: 1.1rem;
+    }
+}
+
+/* Demo Mode Badge */
+.demo-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: rgba(168, 85, 247, 0.2);
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #c4b5fd;
+}
+
+.demo-badge i {
+    font-size: 0.65rem;
+}

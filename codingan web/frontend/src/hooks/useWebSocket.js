@@ -1,13 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-export const useWebSocket = (url = 'ws://localhost:8080') => {
+export const useWebSocket = (url = 'ws://localhost:8080/ws') => {
   const [isConnected, setIsConnected] = useState(false);
   const [ecgData, setEcgData] = useState(null);
   const [flexData, setFlexData] = useState(null);
   const [vitalsData, setVitalsData] = useState(null);
   const [predictionData, setPredictionData] = useState(null); // Add this
   const [error, setError] = useState(null);
-  
+
   const wsRef = useRef(null);
   const reconnectTimerRef = useRef(null);
   const reconnectInterval = 3000;
@@ -35,7 +35,7 @@ export const useWebSocket = (url = 'ws://localhost:8080') => {
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          
+
           switch (data.type) {
             case 'ecg':
               setEcgData(data);
@@ -68,7 +68,7 @@ export const useWebSocket = (url = 'ws://localhost:8080') => {
       ws.onclose = () => {
         console.log('[WebSocket] Connection closed');
         setIsConnected(false);
-        
+
         // Auto reconnect
         reconnectTimerRef.current = setTimeout(() => {
           console.log('[WebSocket] Attempting to reconnect...');
@@ -89,12 +89,12 @@ export const useWebSocket = (url = 'ws://localhost:8080') => {
       clearTimeout(reconnectTimerRef.current);
       reconnectTimerRef.current = null;
     }
-    
+
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
     }
-    
+
     setIsConnected(false);
   }, []);
 

@@ -9,8 +9,12 @@ RUN npm install -g nodemon
 
 WORKDIR /app
 
-# Install Python dependencies for backend and AI
-RUN pip install --no-cache-dir websockets tensorflow-cpu numpy scipy h5py pandas neurokit2
+# Copy requirements first for caching
+COPY backend/requirements.txt ./backend/requirements.txt
+
+# Install Python dependencies for backend API and AI
+RUN pip install --no-cache-dir -r backend/requirements.txt
+RUN pip install --no-cache-dir tensorflow-cpu scipy h5py pandas neurokit2
 
 # Copy AI module and Backend
 # Note: dataset is excluded via .dockerignore

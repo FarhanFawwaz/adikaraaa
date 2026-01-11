@@ -87,6 +87,165 @@
 .nav-actions {
     display: flex;
     gap: var(--space-3);
+    align-items: center;
+}
+
+/* ============================================
+   User Profile Menu (Logged In State)
+   ============================================ */
+
+.user-profile-menu {
+    position: relative;
+}
+
+.user-profile-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-4);
+    background: rgba(102, 126, 234, 0.1);
+    border: 2px solid transparent;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.user-profile-btn:hover {
+    background: rgba(102, 126, 234, 0.15);
+    border-color: var(--primary-300);
+}
+
+.user-avatar {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--gradient-primary);
+    border-radius: 50%;
+    color: white;
+    font-size: var(--text-base);
+}
+
+.user-avatar.large {
+    width: 48px;
+    height: 48px;
+    font-size: var(--text-xl);
+}
+
+.user-profile-btn .user-name {
+    font-weight: 600;
+    color: var(--gray-800);
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-profile-btn .fa-chevron-down {
+    font-size: var(--text-xs);
+    color: var(--gray-500);
+    transition: transform var(--transition-fast);
+}
+
+.user-profile-btn .fa-chevron-down.rotate {
+    transform: rotate(180deg);
+}
+
+/* Profile Dropdown */
+.profile-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 280px;
+    background: white;
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--gray-200);
+    overflow: hidden;
+    z-index: var(--z-dropdown);
+    animation: fadeInDown 0.2s ease-out;
+}
+
+.dropdown-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    background: var(--gray-50);
+}
+
+.dropdown-header .user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dropdown-header .user-name {
+    font-weight: 700;
+    color: var(--gray-900);
+    font-size: var(--text-base);
+}
+
+.dropdown-header .user-email {
+    font-size: var(--text-sm);
+    color: var(--gray-600);
+}
+
+.dropdown-header .user-role {
+    font-size: var(--text-xs);
+    color: var(--primary-600);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: var(--gray-200);
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--gray-700);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all var(--transition-fast);
+}
+
+.dropdown-item:hover {
+    background: var(--gray-100);
+    color: var(--primary-600);
+}
+
+.dropdown-item i {
+    width: 20px;
+    text-align: center;
+    color: var(--gray-500);
+}
+
+.dropdown-item:hover i {
+    color: var(--primary-600);
+}
+
+.dropdown-item.logout {
+    color: var(--error);
+}
+
+.dropdown-item.logout:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.dropdown-item.logout i {
+    color: var(--error);
 }
 
 /* Mobile Menu Toggle */

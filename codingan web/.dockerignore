@@ -1,5 +1,54 @@
+# Python
 **/__pycache__
 **/*.pyc
-.git
-frontend/node_modules
+*.py[cod]
+*$py.class
+.Python
+venv/
+env/
 .venv
+
+# Git
+.git
+.gitignore
+
+# Node
+frontend/node_modules
+node_modules/
+npm-debug.log*
+dist/
+build/
+
+# Documentation
+*.md
+README.md
+docs/
+
+# IDEs & OS
+.vscode/
+.idea/
+.DS_Store
+
+# Environment & Logs
+.env
+.env.local
+*.log
+logs/
+
+# Docker
+docker-compose*.yml
+Dockerfile
+.dockerignore
+
+# Database
+*.db
+*.sqlite
+
+# AI/ML - Exclude large datasets
+ai/dataset/
+
+# Misc
+cookies.txt
+tmp/
+temp/
+

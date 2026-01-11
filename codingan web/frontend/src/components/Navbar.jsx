@@ -16,6 +16,21 @@ export const Navbar = () => {
     setUser(currentUser);
   }, [location]); // Re-check when location changes
 
+  // Handle hash navigation when landing on page with hash
+  useEffect(() => {
+    if (location.pathname === "/" && location.hash) {
+      const sectionId = location.hash.substring(1); // Remove #
+      setTimeout(() => {
+        const section = document.getElementById(sectionId);
+        if (section) {
+          const navbarHeight = 80;
+          const targetPosition = section.offsetTop - navbarHeight;
+          window.scrollTo({ top: targetPosition, behavior: "smooth" });
+        }
+      }, 100); // Small delay to ensure page is loaded
+    }
+  }, [location]);
+
   // Navbar scroll effect
   useEffect(() => {
     const handleScroll = () => {
@@ -41,6 +56,10 @@ export const Navbar = () => {
         window.scrollTo({ top: targetPosition, behavior: "smooth" });
         setIsMobileMenuOpen(false);
       }
+    } else if (location.pathname !== "/" && sectionId) {
+      // If not on landing page, navigate to landing page with section
+      e.preventDefault();
+      navigate(`/#${sectionId}`);
     }
   };
 
@@ -62,58 +81,63 @@ export const Navbar = () => {
             </span>
           </Link>
 
-          <div className={`nav-links ${isMobileMenuOpen ? "mobile-active" : ""}`} id="navLinks">
-            <Link 
-              to="/" 
+          <div
+            className={`nav-links ${isMobileMenuOpen ? "mobile-active" : ""}`}
+            id="navLinks"
+          >
+            <Link
+              to="/"
               className={`nav-link ${isActive("/")}`}
               onClick={(e) => handleNavClick(e, "home")}
             >
               Beranda
             </Link>
-        
-              <>
-                {user && (
-                  <Link to="/dashboard" className={`nav-link ${isActive("/dashboard")}`}>
-                    Dashboard
-                  </Link>
-                )}
-                <a 
-                  href="#features" 
-                  className="nav-link"
-                  onClick={(e) => handleNavClick(e, "features")}
+
+            <>
+              {user && (
+                <Link
+                  to="/dashboard"
+                  className={`nav-link ${isActive("/dashboard")}`}
                 >
-                  Fitur
-                </a>
-                <a 
-                  href="#games" 
-                  className="nav-link"
-                  onClick={(e) => handleNavClick(e, "games")}
-                >
-                  Game Terapi
-                </a>
-                <a 
-                  href="#technology" 
-                  className="nav-link"
-                  onClick={(e) => handleNavClick(e, "technology")}
-                >
-                  Teknologi
-                </a>
-                <a 
-                  href="#about" 
-                  className="nav-link"
-                  onClick={(e) => handleNavClick(e, "about")}
-                >
-                  Tentang
-                </a>
-              </>
-           
+                  Dashboard
+                </Link>
+              )}
+              <a
+                href="#features"
+                className="nav-link"
+                onClick={(e) => handleNavClick(e, "features")}
+              >
+                Fitur
+              </a>
+              <a
+                href="#games"
+                className="nav-link"
+                onClick={(e) => handleNavClick(e, "games")}
+              >
+                Game Terapi
+              </a>
+              <a
+                href="#technology"
+                className="nav-link"
+                onClick={(e) => handleNavClick(e, "technology")}
+              >
+                Teknologi
+              </a>
+              <a
+                href="#about"
+                className="nav-link"
+                onClick={(e) => handleNavClick(e, "about")}
+              >
+                Tentang
+              </a>
+            </>
           </div>
 
           <div className="nav-actions">
             {user ? (
               /* User sudah login - tampilkan profil */
               <div className="user-profile-menu">
-                <button 
+                <button
                   className="user-profile-btn"
                   onClick={() => setShowDropdown(!showDropdown)}
                 >
@@ -121,9 +145,13 @@ export const Navbar = () => {
                     <i className="fas fa-user"></i>
                   </div>
                   <span className="user-name">{user.name}</span>
-                  <i className={`fas fa-chevron-down ${showDropdown ? 'rotate' : ''}`}></i>
+                  <i
+                    className={`fas fa-chevron-down ${
+                      showDropdown ? "rotate" : ""
+                    }`}
+                  ></i>
                 </button>
-                
+
                 {showDropdown && (
                   <div className="profile-dropdown">
                     <div className="dropdown-header">
@@ -133,20 +161,33 @@ export const Navbar = () => {
                       <div className="user-info">
                         <span className="user-name">{user.name}</span>
                         <span className="user-email">{user.email}</span>
-                        <span className="user-role">{user.role === 'patient' ? 'Pasien' : 'Fisioterapis'}</span>
+                        <span className="user-role">
+                          {user.role === "patient" ? "Pasien" : "Fisioterapis"}
+                        </span>
                       </div>
                     </div>
                     <div className="dropdown-divider"></div>
-                    <Link to="/dashboard" className="dropdown-item" onClick={() => setShowDropdown(false)}>
+                    <Link
+                      to="/dashboard"
+                      className="dropdown-item"
+                      onClick={() => setShowDropdown(false)}
+                    >
                       <i className="fas fa-tachometer-alt"></i>
                       Dashboard
                     </Link>
-                    <Link to="/profile" className="dropdown-item" onClick={() => setShowDropdown(false)}>
+                    <Link
+                      to="/profile"
+                      className="dropdown-item"
+                      onClick={() => setShowDropdown(false)}
+                    >
                       <i className="fas fa-user-cog"></i>
                       Pengaturan Profil
                     </Link>
                     <div className="dropdown-divider"></div>
-                    <button className="dropdown-item logout" onClick={handleLogout}>
+                    <button
+                      className="dropdown-item logout"
+                      onClick={handleLogout}
+                    >
                       <i className="fas fa-sign-out-alt"></i>
                       Keluar
                     </button>

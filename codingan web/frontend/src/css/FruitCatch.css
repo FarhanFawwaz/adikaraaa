@@ -1,0 +1,68 @@
+/* Basic styles for Fruit Catch */
+.game-canvas-container {
+  margin-top: 16px;
+}
+.next-note-hint {
+  text-align: center;
+  margin-bottom: 8px;
+  opacity: 0.9;
+}
+.note-display {
+  position: relative;
+}
+.timing-guide {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0;
+}
+
+.finger-guide-list {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+.finger-guide-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+}
+.finger-guide-item .flex-value {
+  display: inline-block;
+  margin-left: 6px;
+  font-weight: 600;
+}
+
+/* Reuse compact header proportions */
+.game-header.compact {
+  margin-top: 10px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.game-canvas-container .game-header.compact {
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ws-status.connected {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.28);
+}
+.ws-status.disconnected {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.28);
+}

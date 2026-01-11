@@ -61,10 +61,10 @@ services:
       dockerfile: Dockerfile
       target: frontend
     working_dir: /app/frontend
-    command: [ "npm", "run", "dev", "--", "--host" ]
+    command: [ "npm", "run", "dev", "--", "--host", "0.0.0.0" ]
     volumes:
       - ./frontend:/app/frontend
-      - /app/frontend/node_modules
+      - node_modules:/app/frontend/node_modules
     ports:
       - "5173:5173"
     environment:
@@ -75,3 +75,4 @@ services:
 
 volumes:
   mysql_data:
+  node_modules:

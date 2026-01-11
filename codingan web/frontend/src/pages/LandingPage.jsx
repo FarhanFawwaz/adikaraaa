@@ -14,9 +14,9 @@ export const LandingPage = () => {
 
     const type = () => {
       if (!typingRef.current) return;
-      
+
       const currentText = typingTexts[textIndex];
-      
+
       if (isDeleting) {
         typingRef.current.textContent = currentText.substring(0, charIndex - 1);
         charIndex--;
@@ -84,7 +84,8 @@ export const LandingPage = () => {
 
     return (
       <span ref={counterRef} className="counter">
-        {count}{suffix}
+        {count}
+        {suffix}
       </span>
     );
   };
@@ -102,37 +103,43 @@ export const LandingPage = () => {
     {
       icon: "fa-gamepad",
       title: "Gamifikasi Terapi",
-      description: "Latihan fisioterapi berubah jadi game seru! Piano virtual, tangkap buah, dan mini game lainnya membuat rehabilitasi tidak membosankan.",
+      description:
+        "Latihan fisioterapi berubah jadi game seru! Piano virtual, tangkap buah, dan mini game lainnya membuat rehabilitasi tidak membosankan.",
       list: ["4+ Game interaktif", "Adaptive difficulty", "Progress tracking"],
     },
     {
       icon: "fa-heartbeat",
       title: "Monitoring Jantung",
-      description: "Pantau detak jantung dan SpO2 secara real-time dengan sensor medis MAX30102 dan EKG menggunakan AD8232.",
+      description:
+        "Pantau detak jantung dan SpO2 secara real-time dengan sensor medis MAX30102 dan EKG menggunakan AD8232.",
       list: ["Real-time vitals", "EKG visualization", "Alert system"],
     },
     {
       icon: "fa-brain",
       title: "AI Aritmia Detection",
-      description: "Algoritma Deep Learning (FCNN) mendeteksi 5 jenis aritmia dengan akurasi 98% berdasarkan MIT-BIH database.",
+      description:
+        "Algoritma Deep Learning (FCNN) mendeteksi 5 jenis aritmia dengan akurasi 98% berdasarkan MIT-BIH database.",
       list: ["98% accuracy", "5 jenis denyut", "Early warning"],
     },
     {
       icon: "fa-chart-line",
       title: "Progress Analytics",
-      description: "Dashboard lengkap untuk pasien dan fisioterapis. Lacak ROM, konsistensi latihan, dan perkembangan dari waktu ke waktu.",
+      description:
+        "Dashboard lengkap untuk pasien dan fisioterapis. Lacak ROM, konsistensi latihan, dan perkembangan dari waktu ke waktu.",
       list: ["Visual charts", "Compliance tracking", "Goal setting"],
     },
     {
       icon: "fa-shield-halved",
       title: "Safety First",
-      description: "Sistem auto-pause saat anomali jantung terdeteksi. Notifikasi instant ke keluarga dan tenaga medis.",
+      description:
+        "Sistem auto-pause saat anomali jantung terdeteksi. Notifikasi instant ke keluarga dan tenaga medis.",
       list: ["Auto-pause game", "Instant alert", "Fatigue detection"],
     },
     {
       icon: "fa-wallet",
       title: "Harga Terjangkau",
-      description: "Dirancang dengan komponen COTS (Commercial Off-The-Shelf) dengan biaya produksi di bawah Rp 1 juta.",
+      description:
+        "Dirancang dengan komponen COTS (Commercial Off-The-Shelf) dengan biaya produksi di bawah Rp 1 juta.",
       list: ["< Rp 1.000.000", "IoT ready", "Mudah dirawat"],
     },
   ];
@@ -143,7 +150,8 @@ export const LandingPage = () => {
       icon: "fa-music",
       tag: "Motorik Halus",
       title: "Finger Piano",
-      description: "Mainkan melodi dengan gerakan jari. Melatih koordinasi jari individual dan timing.",
+      description:
+        "Mainkan melodi dengan gerakan jari. Melatih koordinasi jari individual dan timing.",
       time: "5-7 menit",
       level: "Pemula - Mahir",
       gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
@@ -153,7 +161,8 @@ export const LandingPage = () => {
       icon: "fa-apple-alt",
       tag: "Grip Strength",
       title: "Fruit Catch",
-      description: "Tangkap buah jatuh dengan menggenggam tangan. Melatih kekuatan dan kecepatan reaksi.",
+      description:
+        "Tangkap buah jatuh dengan menggenggam tangan. Melatih kekuatan dan kecepatan reaksi.",
       time: "5-8 menit",
       level: "Mudah - Sedang",
       gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
@@ -163,7 +172,8 @@ export const LandingPage = () => {
       icon: "fa-brain",
       tag: "Kognitif + Motorik",
       title: "Memory Pattern",
-      description: "Ikuti urutan gerakan jari. Melatih memori kerja dan sequencing motorik.",
+      description:
+        "Ikuti urutan gerakan jari. Melatih memori kerja dan sequencing motorik.",
       time: "5-8 menit",
       level: "Sedang - Sulit",
       gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
@@ -173,7 +183,8 @@ export const LandingPage = () => {
       icon: "fa-seedling",
       tag: "Long-term Engagement",
       title: "Gardening Simulator",
-      description: "Tanam dan rawat taman virtual. Latihan konsisten membuat tanaman tumbuh indah.",
+      description:
+        "Tanam dan rawat taman virtual. Latihan konsisten membuat tanaman tumbuh indah.",
       time: "10-15 menit",
       level: "Semua Level",
       gradient: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
@@ -212,8 +223,9 @@ export const LandingPage = () => {
               </h1>
 
               <p className="hero-description fade-in-up delay-1">
-                Sarung tangan pintar yang mengubah fisioterapi menjadi pengalaman menyenangkan,
-                sambil memantau kesehatan jantung Anda secara real-time dengan teknologi AI.
+                Sarung tangan pintar yang mengubah fisioterapi menjadi
+                pengalaman menyenangkan, sambil memantau kesehatan jantung Anda
+                secara real-time dengan teknologi AI.
               </p>
 
               <div className="hero-stats fade-in-up delay-2">
@@ -246,7 +258,10 @@ export const LandingPage = () => {
                   Mulai Rehabilitasi
                   <span className="btn-glow"></span>
                 </Link>
-                <button className="btn btn-outline-hero" onClick={() => scrollToSection("games")}>
+                <button
+                  className="btn btn-outline-hero"
+                  onClick={() => scrollToSection("games")}
+                >
                   <i className="fas fa-play-circle"></i>
                   Lihat Demo
                 </button>
@@ -317,13 +332,19 @@ export const LandingPage = () => {
               Fitur <span className="gradient-text">Unggulan</span>
             </h2>
             <p className="section-description">
-              Kombinasi teknologi IoT, AI, dan gamifikasi untuk rehabilitasi yang efektif dan menyenangkan
+              Kombinasi teknologi IoT, AI, dan gamifikasi untuk rehabilitasi
+              yang efektif dan menyenangkan
             </p>
           </div>
 
           <div className="features-grid">
             {features.map((feature, index) => (
-              <div className="feature-card" key={index} data-aos="fade-up" data-aos-delay={index * 100}>
+              <div
+                className="feature-card"
+                key={index}
+                data-aos="fade-up"
+                data-aos-delay={index * 100}
+              >
                 <div className="feature-icon">
                   <i className={`fas ${feature.icon}`}></i>
                 </div>
@@ -351,15 +372,25 @@ export const LandingPage = () => {
               Game <span className="gradient-text">Rehabilitasi</span>
             </h2>
             <p className="section-description">
-              Setiap game dirancang untuk melatih aspek motorik berbeda dengan cara yang menyenangkan
+              Setiap game dirancang untuk melatih aspek motorik berbeda dengan
+              cara yang menyenangkan
             </p>
           </div>
 
           <div className="games-showcase">
             {games.map((game) => (
-              <div className="game-card" key={game.id} data-game={game.id}>
+              <Link
+                to={`/game/${game.id}`}
+                className="game-card"
+                key={game.id}
+                data-game={game.id}
+                style={{ textDecoration: "none", color: "inherit" }}
+              >
                 <div className="game-image">
-                  <div className="game-preview" style={{ background: game.gradient }}>
+                  <div
+                    className="game-preview"
+                    style={{ background: game.gradient }}
+                  >
                     <i className={`fas ${game.icon}`}></i>
                   </div>
                 </div>
@@ -376,7 +407,7 @@ export const LandingPage = () => {
                     </span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -454,14 +485,18 @@ export const LandingPage = () => {
           <div className="cta-content">
             <h2 className="cta-title">Siap Memulai Perjalanan Rehabilitasi?</h2>
             <p className="cta-description">
-              Bergabunglah dengan ribuan pasien yang telah merasakan manfaat rehabilitasi dengan teknologi AI
+              Bergabunglah dengan ribuan pasien yang telah merasakan manfaat
+              rehabilitasi dengan teknologi AI
             </p>
             <div className="cta-actions">
               <Link to="/register" className="btn btn-hero">
                 <i className="fas fa-rocket"></i>
                 Daftar Sekarang Gratis
               </Link>
-              <button className="btn btn-outline-hero" onClick={() => scrollToSection("features")}>
+              <button
+                className="btn btn-outline-hero"
+                onClick={() => scrollToSection("features")}
+              >
                 <i className="fas fa-info-circle"></i>
                 Pelajari Lebih Lanjut
               </button>
@@ -482,7 +517,8 @@ export const LandingPage = () => {
                 </span>
               </div>
               <p className="footer-tagline">
-                Rehabilitasi stroke yang lebih cerdas dengan teknologi IoT dan AI
+                Rehabilitasi stroke yang lebih cerdas dengan teknologi IoT dan
+                AI
               </p>
               <div className="social-links">
                 <a href="#" aria-label="Instagram">
@@ -503,23 +539,15 @@ export const LandingPage = () => {
             <div className="footer-links">
               <div className="footer-column">
                 <h4>Produk</h4>
-                <a href="#features" onClick={(e) => handleNavClick(e, "features")}>
-                  Fitur
-                </a>
-                <a href="#games" onClick={(e) => handleNavClick(e, "games")}>
-                  Game Terapi
-                </a>
-                <a href="#technology" onClick={(e) => handleNavClick(e, "technology")}>
-                  Teknologi
-                </a>
+                <a href="#features">Fitur</a>
+                <a href="#games">Game Terapi</a>
+                <a href="#technology">Teknologi</a>
                 <Link to="/dashboard">Dashboard Pasien</Link>
               </div>
 
               <div className="footer-column">
                 <h4>Perusahaan</h4>
-                <a href="#about" onClick={(e) => handleNavClick(e, "about")}>
-                  Tentang Kami
-                </a>
+                <a href="#about">Tentang Kami</a>
                 <a href="#team">Tim</a>
                 <a href="#contact">Kontak</a>
                 <a href="#careers">Karir</a>
@@ -536,7 +564,10 @@ export const LandingPage = () => {
           </div>
 
           <div className="footer-bottom">
-            <p>&copy; 2026 NeuroRehab Glove AI - Pop Mie Dower, Telkom University. All rights reserved.</p>
+            <p>
+              &copy; 2026 NeuroRehab Glove AI - Pop Mie Dower, Telkom
+              University. All rights reserved.
+            </p>
             <p className="footer-attribution">
               <i className="fas fa-trophy"></i> Inovasi SDGs Batch 2026
             </p>

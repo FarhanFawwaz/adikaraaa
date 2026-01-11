@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-Mock WebSocket Server untuk NeuroRehab System
-Server ini mengirim data simulasi ECG, Flex Sensor, dan Vitals
-Mengintegrasikan modul AI untuk demonstrasi prediksi real-time.
+WebSocket Server untuk NeuroRehab System
+Server ini mengambil data dari Firebase Realtime Database
+dan mengirimkannya ke frontend via WebSocket.
+Mengintegrasikan modul AI untuk prediksi real-time.
 """
 
 import asyncio
@@ -13,7 +14,12 @@ import math
 import time
 import sys
 import os
+import aiohttp
 from concurrent.futures import ThreadPoolExecutor
+
+# Firebase Configuration
+FIREBASE_DATABASE_URL = "https://neurorehab-58cd1-default-rtdb.asia-southeast1.firebasedatabase.app"
+FIREBASE_API_KEY = "AIzaSyBUr4MKLNnhw3I0oy1rxqQARuFSOaGvZZ8"
 
 # --- PERBAIKAN IMPORT PATH ---
 # Pastikan folder 'codingan web' ada di sys.path agar bisa import 'ai'
@@ -75,7 +81,31 @@ connected_clients = set()
 ecg_buffer = []  
 ai_executor = ThreadPoolExecutor(max_workers=1)
 
-# Heart Rate Variability state
+# Firebase session (will be created in async context)
+firebase_session = None
+
+async def fetch_firebase_data():
+    """Fetch data from Firebase Realtime Database"""
+    global firebase_session
+    
+    try:
+        if firebase_session is None:
+            firebase_session = aiohttp.ClientSession()
+        
+        url = f"{FIREBASE_DATABASE_URL}/.json?auth={FIREBASE_API_KEY}"
+        
+        async with firebase_session.get(url) as response:
+            if response.status == 200:
+                data = await response.json()
+                return data
+            else:
+                print(f"[Firebase] Error: {response.status}")
+                return None
+    except Exception as e:
+        print(f"[Firebase] Fetch error: {e}")
+        return None
+
+# Heart Rate Variability state (fallback jika Firebase offline)
 hrv_offset = random.uniform(-5, 5)
 hrv_change_counter = 0
 
@@ -150,6 +180,7 @@ async def send_data(websocket):
     
     SAMPLING_RATE = 50 # Hz (Approx)
     local_time = 0
+    last_firebase_data = None
     
     print(f"[Server] Client connected: {websocket.remote_address}")
     
@@ -157,36 +188,80 @@ async def send_data(websocket):
         while True:
             current_timestamp = time.time()
             
-            # 1. ECG - Kirim cepat (20ms interval = 50Hz)
-            ecg_val = generate_ecg_value(local_time)
+            # Fetch data from Firebase
+            firebase_data = await fetch_firebase_data()
             
-            msg = {
-                'type': 'ecg',
-                'value': ecg_val,
-                'timestamp': current_timestamp
-            }
-            await websocket.send(json.dumps(msg))
-            
-            # Buffer AI
-            ecg_buffer.append(ecg_val)
-            if len(ecg_buffer) > 3000: del ecg_buffer[:100]
-
-            # 2. Sensor Lain (Slow)
-            if local_time % 25 == 0: # Tiap 0.5s
-                 await websocket.send(json.dumps({
-                    'type': 'flex',
-                    'values': generate_flex_values(),
-                    'timestamp': current_timestamp
-                }))
-            
-            if local_time % 50 == 0: # Tiap 1s
+            if firebase_data:
+                last_firebase_data = firebase_data
+                
+                # 1. ECG Data
+                ecg_val = firebase_data.get('ecg', 512)
+                msg = {
+                    'type': 'ecg',
+                    'value': ecg_val,
+                    'timestamp': firebase_data.get('ts_ms', current_timestamp)
+                }
+                await websocket.send(json.dumps(msg))
+                
+                # Buffer AI
+                ecg_buffer.append(ecg_val)
+                if len(ecg_buffer) > 3000: del ecg_buffer[:100]
+                
+                # 2. Flex Sensor Data
+                flex_val = firebase_data.get('flex', 0)
                 await websocket.send(json.dumps({
-                    'type': 'vitals',
-                    'data': generate_vitals(),
-                    'timestamp': current_timestamp
+                    'type': 'flex',
+                    'values': {
+                        'thumb': flex_val if isinstance(flex_val, int) else flex_val.get('thumb', 50),
+                        'index': flex_val if isinstance(flex_val, int) else flex_val.get('index', 50),
+                        'middle': flex_val if isinstance(flex_val, int) else flex_val.get('middle', 50),
+                        'ring': flex_val if isinstance(flex_val, int) else flex_val.get('ring', 50),
+                        'pinky': flex_val if isinstance(flex_val, int) else flex_val.get('pinky', 50)
+                    },
+                    'timestamp': firebase_data.get('ts_ms', current_timestamp)
                 }))
                 
-            # 3. AI Prediction (Tiap 2 detik = 100 ticks)
+                # 3. Vitals Data (BPM, SpO2)
+                await websocket.send(json.dumps({
+                    'type': 'vitals',
+                    'data': {
+                        'bpm': firebase_data.get('bpm', 0),
+                        'spo2': firebase_data.get('spo2', 0),
+                        'temperature': 36.5  # Default jika tidak ada di Firebase
+                    },
+                    'timestamp': firebase_data.get('ts_ms', current_timestamp)
+                }))
+                
+                print(f"[Firebase] Data received - ECG: {ecg_val}, BPM: {firebase_data.get('bpm')}, SpO2: {firebase_data.get('spo2')}")
+            else:
+                # Fallback ke mock data jika Firebase offline
+                ecg_val = generate_ecg_value(local_time)
+                
+                msg = {
+                    'type': 'ecg',
+                    'value': ecg_val,
+                    'timestamp': current_timestamp
+                }
+                await websocket.send(json.dumps(msg))
+                
+                ecg_buffer.append(ecg_val)
+                if len(ecg_buffer) > 3000: del ecg_buffer[:100]
+                
+                if local_time % 25 == 0:
+                    await websocket.send(json.dumps({
+                        'type': 'flex',
+                        'values': generate_flex_values(),
+                        'timestamp': current_timestamp
+                    }))
+                
+                if local_time % 50 == 0:
+                    await websocket.send(json.dumps({
+                        'type': 'vitals',
+                        'data': generate_vitals(),
+                        'timestamp': current_timestamp
+                    }))
+                
+            # AI Prediction (Tiap 2 detik = 100 ticks)
             if local_time % 100 == 0:
                 print(f"[AI] Buffer size: {len(ecg_buffer)}") # Debug log
                 if len(ecg_buffer) > 100:
@@ -208,7 +283,7 @@ async def send_data(websocket):
                     }))
 
             local_time += 1
-            await asyncio.sleep(0.02) # 20ms = 50Hz stable
+            await asyncio.sleep(0.1)  # 100ms interval untuk Firebase polling
 
     except websockets.exceptions.ConnectionClosed:
         pass

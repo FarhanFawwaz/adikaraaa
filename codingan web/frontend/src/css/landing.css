@@ -32,6 +32,13 @@
     align-items: center;
     justify-content: space-between;
     padding: var(--space-4) 0;
+    position: relative;
+}
+
+.nav-content > .nav-links {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .logo {

@@ -9,8 +9,14 @@ import { Navbar } from "../components/Navbar";
 import { PatientInfoCard } from "../components/PatientInfoCard";
 
 export const Dashboard = () => {
-  const { isConnected, ecgData, flexData, vitalsData, predictionData } =
-    useWebSocket();
+  const {
+    isConnected,
+    isFirebaseConnected,
+    ecgData,
+    flexData,
+    vitalsData,
+    predictionData,
+  } = useWebSocket();
 
   return (
     <div className="dashboard-page">
@@ -50,11 +56,13 @@ export const Dashboard = () => {
                 </h3>
                 <div
                   className={`connection-badge ${
-                    isConnected ? "connected" : "disconnected"
+                    isConnected && isFirebaseConnected
+                      ? "connected"
+                      : "disconnected"
                   }`}
                 >
                   <span className="status-dot"></span>
-                  {isConnected ? "Live" : "Offline"}
+                  {isConnected && isFirebaseConnected ? "Live" : "Disconnected"}
                 </div>
               </div>
               <div className="ecg-container">

@@ -7,6 +7,7 @@ import { BirdGame } from "./pages/BirdGame";
 import { LevelsGame } from "./pages/LevelsGame";
 import { FingerPiano } from "./pages/FingerPiano";
 import { MemoryPattern } from "./pages/MemoryPattern";
+import { FruitCatch } from "./pages/FruitCatch";
 import { DailyExerciseDetail } from "./pages/DailyExerciseDetail";
 import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
@@ -33,6 +34,9 @@ function App() {
         <Route path="/game/levels" element={<LevelsGame />} />
         <Route path="/game/piano" element={<FingerPiano />} />
         <Route path="/game/memory" element={<MemoryPattern />} />
+        <Route path="/game/fruit" element={<FruitCatch />} />
+        {/* Alias route for FruitCatch */}
+        <Route path="/game/catch" element={<FruitCatch />} />
       </Routes>
     </Router>
   );

@@ -54,7 +54,13 @@ export const MemoryPattern = () => {
   // WebSocket Connection for flex sensor
   useEffect(() => {
     const connectWebSocket = () => {
-      const wsUrl = "ws://localhost:8080/api/ws";
+      const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+      const host = window.location.hostname || "localhost";
+      const port =
+        window.location.port === "5173" || window.location.port === ""
+          ? "8080"
+          : window.location.port;
+      const wsUrl = `${wsScheme}://${host}:${port}/api/ws`;
       wsRef.current = new WebSocket(wsUrl);
 
       wsRef.current.onopen = () => {

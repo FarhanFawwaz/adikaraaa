@@ -10,9 +10,38 @@ import math
 import time
 import sys
 import os
+import aiohttp
 from concurrent.futures import ThreadPoolExecutor
 
+
 router = APIRouter()
+
+# Firebase Configuration
+FIREBASE_DATABASE_URL = "https://neurorehab-58cd1-default-rtdb.asia-southeast1.firebasedatabase.app/"
+FIREBASE_DB_SECRET = "YPtFmyP2WHqRb5YOdKgZuEk95jLbp0LIXPBFpxug"
+API_KEY = "AIzaSyBUr4MKLNnhw3I0oy1rxqQARuFSOaGvZZ8"
+
+async def fetch_firebase_data():
+    """Fetch data from Firebase Realtime Database using Database Secret"""
+    url = f"{FIREBASE_DATABASE_URL}/.json?auth={FIREBASE_DB_SECRET}"
+    
+    try:
+        # Gunakan session baru tiap request untuk isolasi (atau reuse global session jika traffic tinggi)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                status = response.status
+                if status == 200:
+                    data = await response.json()
+                    # print(f"[Firebase] Data received: {data}", flush=True) # Debug log
+                    return data
+                else:
+                    print(f"[Firebase] Error: {status}", flush=True)
+                    # text = await response.text()
+                    # print(f"[Firebase] Body: {text}", flush=True)
+                    return None
+    except Exception as e:
+        print(f"[Firebase] Exception: {e}", flush=True)
+        return None
 
 # Add ai folder to path for import
 backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -162,41 +191,47 @@ async def websocket_endpoint(websocket: WebSocket):
         while True:
             current_timestamp = time.time()
             
-            # 1. ECG data (50Hz)
-            ecg_val = generate_ecg_value(local_time)
-            await websocket.send_json({
-                'type': 'ecg',
-                'value': ecg_val,
-                'timestamp': current_timestamp
-            })
+            # Fetch data from Firebase
+            # print("Fetching Firebase...", flush=True) # Comment out to avoid spam if working
+            firebase_data = await fetch_firebase_data()
             
-            # Buffer for AI (keep last 30 seconds = 1500 samples at 50Hz)
-            ecg_buffer.append(ecg_val)
-            if len(ecg_buffer) > 1500:
-                del ecg_buffer[:100]
-            
-            # 2. Flex sensors (every 0.5s = 25 ticks)
-            if local_time % 25 == 0:
+            if firebase_data:
+                # 1. ECG Data
+                ecg_val = firebase_data.get('ecg', 512)
+                # ... (rest of code)
+            else:
+                # Fallback MOCK jika Firebase offline
+                # print("[Fallback] Using mock data", flush=True) # Added logging
+                ecg_val = generate_ecg_value(local_time)
                 await websocket.send_json({
-                    'type': 'flex',
-                    'values': generate_flex_values(),
+                    'type': 'ecg',
+                    'value': ecg_val,
                     'timestamp': current_timestamp
                 })
+                
+                ecg_buffer.append(ecg_val)
+                if len(ecg_buffer) > 1500: del ecg_buffer[:100]
+                
+                if local_time % 25 == 0:
+                    await websocket.send_json({
+                        'type': 'flex',
+                        'values': generate_flex_values(),
+                        'timestamp': current_timestamp
+                    })
+                
+                if local_time % 50 == 0:
+                    await websocket.send_json({
+                        'type': 'vitals',
+                        'data': generate_vitals(),
+                        'timestamp': current_timestamp
+                    })
             
-            # 3. Vitals (every 1s = 50 ticks)
-            if local_time % 50 == 0:
-                await websocket.send_json({
-                    'type': 'vitals',
-                    'data': generate_vitals(),
-                    'timestamp': current_timestamp
-                })
-            
-            # 4. AI Prediction (every 3s = 150 ticks)
-            if local_time % 150 == 0 and len(ecg_buffer) > 500:
+            # 4. AI Prediction (every 2s = 100 ticks approx, or handle manually)
+            # Jika pakai firebase, kita bisa trigger prediksi tiap sekian iterasi
+            if local_time % 20 == 0 and len(ecg_buffer) > 500: # Approx tiap 2 detik (karena delay 0.1s)
                 if AI_AVAILABLE:
-                    # Run AI prediction in executor to avoid blocking
                     loop = asyncio.get_running_loop()
-                    snapshot = list(ecg_buffer)  # Copy buffer
+                    snapshot = list(ecg_buffer)
                     
                     try:
                         result = await loop.run_in_executor(
@@ -207,52 +242,17 @@ async def websocket_endpoint(websocket: WebSocket):
                         )
                         
                         if result and 'error' not in result:
+                            # Kirim hasil
                             await websocket.send_json({
                                 'type': 'prediction',
                                 'data': result,
-                                'timestamp': current_timestamp,
-                                'ai_type': 'real'
-                            })
-                            print(f"[AI] Prediction: {result.get('prediction_label')} ({result.get('confidence', 0)*100:.1f}%)", flush=True)
-                        else:
-                            # Send mock if AI fails
-                            await websocket.send_json({
-                                'type': 'prediction',
-                                'data': {
-                                    'prediction_label': 'N (Normal)',
-                                    'confidence': random.uniform(0.92, 0.99),
-                                    'all_probabilities': {
-                                        'N (Normal)': random.uniform(0.90, 0.98),
-                                        'A (AFib)': random.uniform(0.01, 0.05),
-                                        'O (Other)': random.uniform(0.01, 0.03),
-                                        '~ (Noisy)': random.uniform(0.00, 0.02)
-                                    }
-                                },
-                                'timestamp': current_timestamp,
-                                'ai_type': 'mock'
+                                'timestamp': current_timestamp
                             })
                     except Exception as e:
                         print(f"[AI] Error: {e}", flush=True)
-                else:
-                    # Mock prediction if AI not available
-                    await websocket.send_json({
-                        'type': 'prediction',
-                        'data': {
-                            'prediction_label': 'N (Normal)',
-                            'confidence': random.uniform(0.92, 0.99),
-                            'all_probabilities': {
-                                'N (Normal)': random.uniform(0.90, 0.98),
-                                'A (AFib)': random.uniform(0.01, 0.05),
-                                'O (Other)': random.uniform(0.01, 0.03),
-                                '~ (Noisy)': random.uniform(0.00, 0.02)
-                            }
-                        },
-                        'timestamp': current_timestamp,
-                        'ai_type': 'mock'
-                    })
-            
+
             local_time += 1
-            await asyncio.sleep(0.02)  # 50Hz
+            await asyncio.sleep(0.1)  # 100ms interval for Firebase polling
             
     except WebSocketDisconnect:
         print("[WebSocket] Client disconnected", flush=True)

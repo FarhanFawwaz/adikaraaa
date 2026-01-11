@@ -83,6 +83,73 @@ async def get_current_user_from_cookie(request: Request, db: Session) -> Optiona
     return user
 
 
+async def get_current_user_from_request(request: Request, db: Session) -> Optional[User]:
+    """Extract user from cookie or Authorization header"""
+    # Try cookie first
+    user = await get_current_user_from_cookie(request, db)
+    if user:
+        return user
+    
+    # Try Authorization header
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return None
+    
+    token = auth_header.replace("Bearer ", "")
+    payload = decode_access_token(token)
+    if not payload:
+        return None
+    
+    user_id = payload.get("sub")
+    if not user_id:
+        return None
+    
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    return user
+
+
+# ============================================
+# Current User Routes
+# ============================================
+
+@router.get("/me")
+async def get_current_patient(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Get current logged-in user/patient data"""
+    
+    user = await get_current_user_from_request(request, db)
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Tidak terautentikasi"
+        )
+    
+    # Get patient profile if exists
+    profile = db.query(PatientProfile).filter(
+        PatientProfile.user_id == user.id
+    ).first()
+    
+    return {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "role": user.role,
+        "is_active": user.is_active,
+        "created_at": user.created_at.isoformat() if user.created_at else None,
+        "patient_profile": {
+            "age": profile.age if profile else None,
+            "has_hypertension": profile.has_hypertension if profile else False,
+            "has_diabetes": profile.has_diabetes if profile else False,
+            "has_heart_disease": profile.has_heart_disease if profile else False,
+            "has_no_conditions": profile.has_no_conditions if profile else False,
+            "notes": profile.notes if profile else None
+        } if profile else None
+    }
+
+
 # ============================================
 # Health Profile Routes
 # ============================================

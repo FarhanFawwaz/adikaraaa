@@ -1,10 +1,14 @@
 """
 Therapy Sessions Routes
 """
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends, Request
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
+from sqlalchemy.orm import Session
+
+from app.database import get_db
+from app.models.user import User
 
 router = APIRouter()
 
@@ -46,6 +50,63 @@ mock_sessions = [
         status="completed"
     )
 ]
+
+
+COOKIE_NAME = "access_token"
+
+
+async def get_current_user_from_request(request: Request, db: Session) -> Optional[User]:
+    """Extract user from cookie or Authorization header"""
+    from app.utils.auth import decode_access_token
+    
+    # Try cookie first
+    token = request.cookies.get(COOKIE_NAME)
+    
+    # Try Authorization header if no cookie
+    if not token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.replace("Bearer ", "")
+    
+    if not token:
+        return None
+    
+    payload = decode_access_token(token)
+    if not payload:
+        return None
+    
+    user_id = payload.get("sub")
+    if not user_id:
+        return None
+    
+    user = db.query(User).filter(User.id == int(user_id)).first()
+    return user
+
+
+async def get_current_user_from_cookie(request: Request, db: Session) -> Optional[User]:
+    """Extract user from httpOnly cookie - deprecated, use get_current_user_from_request"""
+    return await get_current_user_from_request(request, db)
+
+
+@router.get("/count")
+async def get_session_count(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Get session count for current user"""
+    
+    user = await get_current_user_from_request(request, db)
+    
+    if not user:
+        # Return 0 if not authenticated (for graceful degradation)
+        return {"count": 0}
+    
+    # For now, return count from mock data
+    # TODO: Implement actual session counting from database
+    patient_id = f"P-{datetime.now().year}-{str(user.id).zfill(3)}"
+    count = len([s for s in mock_sessions if s.patient_id == patient_id])
+    
+    return {"count": count}
 
 
 @router.get("/", response_model=List[SessionData])

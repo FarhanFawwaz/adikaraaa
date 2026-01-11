@@ -2,14 +2,16 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 
 export const useWebSocket = (url = 'ws://localhost:8080/ws') => {
   const [isConnected, setIsConnected] = useState(false);
+  const [isFirebaseConnected, setIsFirebaseConnected] = useState(true);
   const [ecgData, setEcgData] = useState(null);
   const [flexData, setFlexData] = useState(null);
   const [vitalsData, setVitalsData] = useState(null);
-  const [predictionData, setPredictionData] = useState(null); // Add this
+  const [predictionData, setPredictionData] = useState(null);
   const [error, setError] = useState(null);
 
   const wsRef = useRef(null);
   const reconnectTimerRef = useRef(null);
+  const firebaseTimeoutRef = useRef(null);
   const reconnectInterval = 3000;
 
   const connect = useCallback(() => {
@@ -39,15 +41,31 @@ export const useWebSocket = (url = 'ws://localhost:8080/ws') => {
           switch (data.type) {
             case 'ecg':
               setEcgData(data);
+              setIsFirebaseConnected(true);
+              // Reset timeout - if we receive data, Firebase is connected
+              if (firebaseTimeoutRef.current) {
+                clearTimeout(firebaseTimeoutRef.current);
+              }
+              firebaseTimeoutRef.current = setTimeout(() => {
+                setIsFirebaseConnected(false);
+              }, 5000); // If no data for 5 seconds, mark as disconnected
               break;
             case 'flex':
               setFlexData(data);
+              setIsFirebaseConnected(true);
               break;
             case 'vitals':
               setVitalsData(data);
+              setIsFirebaseConnected(true);
               break;
-            case 'prediction': // Add this case
+            case 'prediction':
               setPredictionData(data.data);
+              break;
+            case 'error':
+              if (data.message && data.message.includes('Firebase')) {
+                setIsFirebaseConnected(false);
+                console.warn('[WebSocket] Firebase disconnected:', data.message);
+              }
               break;
             case 'info':
               console.log('[WebSocket]', data.message);
@@ -90,12 +108,18 @@ export const useWebSocket = (url = 'ws://localhost:8080/ws') => {
       reconnectTimerRef.current = null;
     }
 
+    if (firebaseTimeoutRef.current) {
+      clearTimeout(firebaseTimeoutRef.current);
+      firebaseTimeoutRef.current = null;
+    }
+
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
     }
 
     setIsConnected(false);
+    setIsFirebaseConnected(false);
   }, []);
 
   const send = useCallback((data) => {
@@ -111,5 +135,5 @@ export const useWebSocket = (url = 'ws://localhost:8080/ws') => {
     return () => disconnect();
   }, [connect, disconnect]);
 
-  return { isConnected, ecgData, flexData, vitalsData, predictionData, error }; // Add predictionData to return
+  return { isConnected, isFirebaseConnected, ecgData, flexData, vitalsData, predictionData, error };
 };

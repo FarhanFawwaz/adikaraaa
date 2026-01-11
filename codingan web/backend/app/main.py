@@ -1,5 +1,14 @@
 """
 FastAPI Application Entry Point
+
+Unified server yang menyediakan:
+- REST API endpoints untuk authentication, patients, sessions, games
+- WebSocket endpoint untuk real-time data streaming
+- Firebase integration untuk sensor data
+- AI prediction untuk ECG analysis
+
+Note: Ini adalah satu-satunya server yang dibutuhkan untuk production & development.
+Standalone WebSocket server telah dihapus untuk mengurangi duplikasi dan kompleksitas.
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware

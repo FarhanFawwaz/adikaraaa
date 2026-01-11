@@ -43,6 +43,11 @@ async def fetch_firebase_data():
         print(f"[Firebase] Exception: {e}", flush=True)
         return None
 
+if __name__ == "__main__":
+    import asyncio
+    data = asyncio.run(fetch_firebase_data())
+    print("[DEBUG] Firebase data fetched:", data)
+
 # Add ai folder to path for import
 backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 project_root = os.path.dirname(backend_dir)
@@ -242,7 +247,8 @@ async def websocket_endpoint(websocket: WebSocket):
                         )
                         
                         if result and 'error' not in result:
-                            # Kirim hasil
+                            # Kirim hasil (debug)
+                            print("[AI] Prediction result:", result, flush=True)
                             await websocket.send_json({
                                 'type': 'prediction',
                                 'data': result,

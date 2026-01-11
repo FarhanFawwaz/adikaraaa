@@ -42,7 +42,8 @@ app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(patients.router, prefix="/api/patients", tags=["Patients"])
 app.include_router(sessions.router, prefix="/api/sessions", tags=["Sessions"])
 app.include_router(games.router, prefix="/api/games", tags=["Games"])
-app.include_router(ws_router, tags=["WebSocket"])
+# Mount WebSocket under /api to match frontend ws://<host>/api/ws
+app.include_router(ws_router, prefix="/api", tags=["WebSocket"])
 
 
 @app.on_event("startup")

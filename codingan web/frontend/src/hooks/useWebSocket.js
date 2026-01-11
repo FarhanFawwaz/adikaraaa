@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-export const useWebSocket = (url = 'ws://localhost:8080/ws') => {
+export const useWebSocket = (url = 'ws://localhost:8080/api/ws') => {
   const [isConnected, setIsConnected] = useState(false);
   const [isFirebaseConnected, setIsFirebaseConnected] = useState(true);
   const [ecgData, setEcgData] = useState(null);
@@ -37,6 +37,9 @@ export const useWebSocket = (url = 'ws://localhost:8080/ws') => {
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+
+          // Debug: log all received messages
+          console.log('[WebSocket] Received:', data.type, data);
 
           switch (data.type) {
             case 'ecg':

@@ -1,0 +1,19 @@
+{
+  "name": "neurorehab-bridge-server",
+  "version": "1.0.0",
+  "description": "WebSocket bridge server untuk relay data sensor dari Firebase ke Frontend",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": ["websocket", "firebase", "iot", "sensor"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ws": "^8.18.0",
+    "firebase-admin": "^12.7.0",
+    "dotenv": "^16.4.7"
+  }
+}

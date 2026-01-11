@@ -8,18 +8,33 @@ export const ECGChart = ({ ecgData, isConnected }) => {
   const positionRef = useRef(0); // Current sweep position
   const gapWidth = 30; // Width of the gap/blank area
 
-  // Normalisasi nilai ECG dari server (range: ~0-1024) ke canvas height
+  // Normalisasi nilai ECG dengan amplifikasi untuk perubahan lebih terlihat
   const normalizeECGValue = (value, canvasHeight) => {
+    // Expected range dari Firebase: ~1000-3000 (centered around 2000)
+    // Apply amplification to make small changes more visible
+    const baseline = 2000; // Center baseline
+    const deviation = value - baseline;
+    const amplification = 3; // Amplify changes by 3x
+    const amplified = baseline + (deviation * amplification);
+
+    // Map to canvas height with some margin
     const minValue = 0;
-    const maxValue = 1024;
-    const clampedValue = Math.max(minValue, Math.min(maxValue, value));
-    return canvasHeight - (clampedValue / maxValue) * canvasHeight;
+    const maxValue = 4095;
+    const clampedValue = Math.max(minValue, Math.min(maxValue, amplified));
+
+    // Invert for canvas (0 at top)
+    const normalized = canvasHeight - (clampedValue / maxValue) * canvasHeight;
+    return normalized;
   };
 
   // Update latest value when new data arrives
   useEffect(() => {
     if (isConnected && ecgData?.value !== undefined) {
       latestValueRef.current = ecgData.value;
+      // Debug logging
+      if (Math.random() < 0.01) { // Log 1% of the time to avoid spam
+        console.log('[ECG] Received value:', ecgData.value);
+      }
     }
   }, [ecgData, isConnected]);
 
@@ -28,7 +43,7 @@ export const ECGChart = ({ ecgData, isConnected }) => {
     if (!canvas) return;
 
     const ctx = canvas.getContext("2d");
-    
+
     const resizeCanvas = () => {
       canvas.width = canvas.offsetWidth;
       canvas.height = canvas.offsetHeight;
@@ -78,7 +93,7 @@ export const ECGChart = ({ ecgData, isConnected }) => {
 
       for (let i = 0; i < width; i++) {
         const value = dataPointsRef.current[i];
-        
+
         if (value !== null) {
           if (!drawing) {
             ctx.moveTo(i, value);

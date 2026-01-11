@@ -16,31 +16,30 @@ from concurrent.futures import ThreadPoolExecutor
 
 router = APIRouter()
 
-# Firebase Configuration
-FIREBASE_DATABASE_URL = "https://neurorehab-58cd1-default-rtdb.asia-southeast1.firebasedatabase.app/"
-FIREBASE_DB_SECRET = "YPtFmyP2WHqRb5YOdKgZuEk95jLbp0LIXPBFpxug"
-API_KEY = "AIzaSyBUr4MKLNnhw3I0oy1rxqQARuFSOaGvZZ8"
+# Firebase Configuration - Corrected to match actual database
+FIREBASE_DATABASE_URL = "https://neurorehab-58cd1-default-rtdb.asia-southeast1.firebasedatabase.app"
+FIREBASE_PATH = "/device1/latest"  # Path where ESP32 sends sensor data
 
 async def fetch_firebase_data():
-    """Fetch data from Firebase Realtime Database using Database Secret"""
-    url = f"{FIREBASE_DATABASE_URL}/.json?auth={FIREBASE_DB_SECRET}"
+    """Fetch data from Firebase Realtime Database at /device1/latest"""
+    url = f"{FIREBASE_DATABASE_URL}{FIREBASE_PATH}.json"
     
     try:
-        # Gunakan session baru tiap request untuk isolasi (atau reuse global session jika traffic tinggi)
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 status = response.status
                 if status == 200:
                     data = await response.json()
-                    # print(f"[Firebase] Data received: {data}", flush=True) # Debug log
+                    if data:  # Only log when we have data
+                        print(f"[Firebase] ✅ Data received: BPM={data.get('bpm', 0)}, SpO2={data.get('spo2', 0)}%, ECG={data.get('ecg', 0)}, Flex={data.get('flex', 0)}", flush=True)
                     return data
                 else:
-                    print(f"[Firebase] Error: {status}", flush=True)
-                    # text = await response.text()
-                    # print(f"[Firebase] Body: {text}", flush=True)
+                    print(f"[Firebase] ❌ Error {status}", flush=True)
+                    text = await response.text()
+                    print(f"[Firebase] Response: {text[:200]}", flush=True)
                     return None
     except Exception as e:
-        print(f"[Firebase] Exception: {e}", flush=True)
+        print(f"[Firebase] ❌ Exception: {e}", flush=True)
         return None
 
 if __name__ == "__main__":
@@ -197,16 +196,44 @@ async def websocket_endpoint(websocket: WebSocket):
             current_timestamp = time.time()
             
             # Fetch data from Firebase
-            # print("Fetching Firebase...", flush=True) # Comment out to avoid spam if working
             firebase_data = await fetch_firebase_data()
             
             if firebase_data:
+                # Firebase data available - use real sensor data
                 # 1. ECG Data
                 ecg_val = firebase_data.get('ecg', 512)
-                # ... (rest of code)
+                await websocket.send_json({
+                    'type': 'ecg',
+                    'value': ecg_val,
+                    'timestamp': current_timestamp
+                })
+                
+                ecg_buffer.append(ecg_val)
+                if len(ecg_buffer) > 1500: del ecg_buffer[:100]
+                
+                # 2. Flex Data - Send single value from Firebase
+                flex_val = firebase_data.get('flex', 0)
+                if local_time % 5 == 0:  # Update every 500ms
+                    await websocket.send_json({
+                        'type': 'flex',
+                        'value': flex_val,  # Single flex sensor value
+                        'timestamp': current_timestamp
+                    })
+                
+                # 3. Vitals Data (BPM & SpO2)
+                if local_time % 10 == 0:  # Update every 1 second
+                    bpm = firebase_data.get('bpm', 0)
+                    spo2 = firebase_data.get('spo2', 0)
+                    await websocket.send_json({
+                        'type': 'vitals',
+                        'bpm': bpm,
+                        'spo2': spo2,
+                        'fingerDetected': (bpm > 0 and spo2 > 0),
+                        'timestamp': current_timestamp
+                    })
             else:
                 # Fallback MOCK jika Firebase offline
-                # print("[Fallback] Using mock data", flush=True) # Added logging
+                print("[Fallback] Using mock data - Firebase not available", flush=True)
                 ecg_val = generate_ecg_value(local_time)
                 await websocket.send_json({
                     'type': 'ecg',
@@ -256,6 +283,23 @@ async def websocket_endpoint(websocket: WebSocket):
                             })
                     except Exception as e:
                         print(f"[AI] Error: {e}", flush=True)
+                else:
+                    # Send mock prediction when AI not available
+                    mock_prediction = {
+                        'prediction_label': 'N (Normal)',
+                        'confidence': 0.85,
+                        'all_probabilities': {
+                            'A (AFib)': 0.05,
+                            'N (Normal)': 0.85,
+                            'O (Other)': 0.08,
+                            '~ (Noisy)': 0.02
+                        }
+                    }
+                    await websocket.send_json({
+                        'type': 'prediction',
+                        'data': mock_prediction,
+                        'timestamp': current_timestamp
+                    })
 
             local_time += 1
             await asyncio.sleep(0.1)  # 100ms interval for Firebase polling

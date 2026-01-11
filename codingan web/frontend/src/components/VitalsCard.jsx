@@ -5,10 +5,10 @@ export const VitalsCard = ({ vitalsData, isConnected }) => {
   const [spo2, setSpo2] = useState(null);
 
   useEffect(() => {
-    // Hanya update jika ada data dari WebSocket
-    if (isConnected && vitalsData?.data) {
-      setBpm(vitalsData.data.bpm);
-      setSpo2(vitalsData.data.spo2);
+    // Update vitals data from Firebase (direct properties)
+    if (isConnected && vitalsData) {
+      if (vitalsData.bpm !== undefined) setBpm(vitalsData.bpm);
+      if (vitalsData.spo2 !== undefined) setSpo2(vitalsData.spo2);
     }
   }, [vitalsData, isConnected]);
 
@@ -29,9 +29,8 @@ export const VitalsCard = ({ vitalsData, isConnected }) => {
         </svg>
         <div className="text-slate-400 text-sm mb-2">Heart Rate</div>
         <div
-          className={`text-text-light text-4xl font-bold mb-1 ${
-            bpm ? "animate-pulse" : ""
-          }`}
+          className={`text-text-light text-4xl font-bold mb-1 ${bpm ? "animate-pulse" : ""
+            }`}
         >
           {bpm !== null ? bpm : "--"}
         </div>

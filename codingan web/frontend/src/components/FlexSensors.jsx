@@ -10,9 +10,29 @@ export const FlexSensors = ({ flexData, isConnected }) => {
   });
 
   useEffect(() => {
-    // Hanya update jika ada data dari WebSocket
-    if (isConnected && flexData?.values) {
-      setFingers(flexData.values);
+    // Handle both single flex value (from Firebase) and multi-finger values (from mock)
+    if (isConnected && flexData) {
+      if (flexData.values) {
+        // Multi-finger data (mock)
+        setFingers(flexData.values);
+      } else if (flexData.value !== undefined) {
+        // Single flex sensor (from Firebase)
+        // Use smaller max value (200 instead of 4095) for better visibility
+        // Values typically range 0-100, so 200 provides good scaling
+        const maxFlexValue = 200; // Adjusted for better sensitivity
+        const percentage = Math.min(100, Math.round((flexData.value / maxFlexValue) * 100));
+
+        // Debug log
+        console.log('[Flex] Raw:', flexData.value, '| %:', percentage + '%', '(max=' + maxFlexValue + ')');
+
+        setFingers({
+          thumb: percentage,
+          index: percentage,
+          middle: percentage,
+          ring: percentage,
+          pinky: percentage,
+        });
+      }
     }
   }, [flexData, isConnected]);
 
@@ -98,18 +118,17 @@ export const FlexSensors = ({ flexData, isConnected }) => {
 
   return (
     <div className="bg-card-dark rounded-xl p-5 border border-white/5 h-full">
-     
+
       <div className="flex justify-around gap-4">
         {fingerNames.map(({ key, label }) => (
           <div key={key} className="text-center flex-1">
             <div className="w-full h-64 bg-dark rounded-lg flex items-end overflow-hidden relative">
               {fingers[key] !== null ? (
                 <div
-                  className={`w-full transition-all duration-300 rounded-t-lg ${
-                    fingers[key] > 80
-                      ? "bg-purple"
-                      : "bg-gradient-to-t from-primary to-blue-400"
-                  }`}
+                  className={`w-full transition-all duration-300 rounded-t-lg ${fingers[key] > 80
+                    ? "bg-purple"
+                    : "bg-gradient-to-t from-primary to-blue-400"
+                    }`}
                   style={{ height: `${fingers[key]}%` }}
                 />
               ) : (

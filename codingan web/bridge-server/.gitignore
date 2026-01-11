@@ -1,0 +1,11 @@
+node_modules/
+*.log
+npm-debug.log*
+.DS_Store
+
+# Firebase Service Account Key (RAHASIA!)
+firebase-service-account.json
+
+# Environment variables
+.env.local
+.env.production

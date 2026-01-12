@@ -114,7 +114,7 @@ export const FlexSensors = ({ flexData, isConnected }) => {
   ];
 
   return (
-    <div className="bg-card-dark rounded-xl p-5 border border-white/5 h-full">
+    <div className="bg-card-dark rounded-xl p border border-white/5 h-full">
 
       <div className="flex justify-around gap-4">
         {fingerNames.map(({ key, label }) => {

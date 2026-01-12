@@ -1,0 +1,124 @@
+/* ============================================
+   AI Prediction Card Styles
+   ============================================ */
+
+.ai-prediction-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: var(--space-4);
+}
+
+.prediction-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-2) 0;
+}
+
+.prediction-badge {
+    padding: 10px 24px;
+    border-radius: 12px;
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.2);
+    transition: all 0.3s ease;
+}
+
+.prediction-label {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #a78bfa;
+    text-align: center;
+}
+
+.prediction-confidence {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.confidence-label {
+    font-size: 0.75rem;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.confidence-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+}
+
+.probabilities-list {
+    flex: 1;
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.prob-title {
+    font-size: 0.7rem;
+    color: var(--gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    margin-bottom: 4px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.prob-item {
+    display: grid;
+    grid-template-columns: 60px 1fr 45px;
+    align-items: center;
+    gap: 10px;
+}
+
+.prob-label-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--gray-300);
+    font-weight: 500;
+}
+
+.prob-icon {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    font-weight: 700;
+}
+
+.prob-bar-bg {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.prob-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.4s ease;
+}
+
+.prob-value {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    text-align: right;
+}

@@ -1,4 +1,5 @@
 import React from "react";
+import "../css/AIPredictionCard.css";
 
 export const AIPredictionCard = ({ predictionData }) => {
   const data = predictionData || {
@@ -43,139 +44,61 @@ export const AIPredictionCard = ({ predictionData }) => {
   const statusStyle = getStatusStyle(data.prediction_label);
 
   return (
-    <div style={{
-      display: "flex",
-      flexDirection: "column",
-      height: "100%",
-      gap: "8px",
-    }}>
+    <div className="ai-prediction-content">
       {/* Main Prediction Display */}
-      <div style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: "6px",
-        padding: "8px 0",
-      }}>
-        <div style={{
-          padding: "8px 16px",
-          borderRadius: "10px",
-          background: statusStyle.bg,
-          border: `1px solid ${statusStyle.border}`,
-          boxShadow: `0 0 15px ${statusStyle.border}`,
-        }}>
-          <span style={{
-            fontSize: "16px",
-            fontWeight: "700",
-            color: statusStyle.color,
-          }}>
+      <div className="prediction-main">
+        <div 
+          className="prediction-badge"
+          style={{
+            background: statusStyle.bg,
+            borderColor: statusStyle.border,
+            boxShadow: `0 0 15px ${statusStyle.border}`
+          }}
+        >
+          <span 
+            className="prediction-label"
+            style={{ color: statusStyle.color }}
+          >
             {data.prediction_label}
           </span>
         </div>
 
-        <div style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
-        }}>
-          <span style={{
-            fontSize: "10px",
-            color: "#94a3b8",
-            textTransform: "uppercase",
-            letterSpacing: "0.5px",
-          }}>
-            Confidence
-          </span>
-          <span style={{
-            fontSize: "14px",
-            fontWeight: "700",
-            color: "white",
-          }}>
+        <div className="prediction-confidence">
+          <span className="confidence-label">Confidence</span>
+          <span className="confidence-value">
             {(data.confidence * 100).toFixed(1)}%
           </span>
         </div>
       </div>
 
       {/* Probabilities List */}
-      <div style={{
-        flex: "1",
-        background: "rgba(15, 23, 42, 0.5)",
-        borderRadius: "8px",
-        padding: "8px 10px",
-        border: "1px solid rgba(255, 255, 255, 0.05)",
-      }}>
-        <div style={{
-          fontSize: "9px",
-          color: "#64748b",
-          textTransform: "uppercase",
-          letterSpacing: "0.5px",
-          fontWeight: "600",
-          marginBottom: "6px",
-          paddingBottom: "4px",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
-        }}>
-          Class Probabilities
-        </div>
-        <div style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "4px",
-        }}>
+      <div className="probabilities-list">
+        <div className="prob-title">Class Probabilities</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
           {Object.entries(data.all_probabilities || {}).map(([label, prob]) => {
             const color = getProbColor(label);
             const icon = getLabelIcon(label);
             return (
-              <div key={label} style={{
-                display: "grid",
-                gridTemplateColumns: "55px 1fr 40px",
-                alignItems: "center",
-                gap: "8px",
-              }}>
-                <div style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  fontSize: "11px",
-                  color: "#cbd5e1",
-                  fontWeight: "500",
-                }}>
-                  <span style={{
-                    width: "12px",
-                    height: "12px",
-                    borderRadius: "3px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "8px",
-                    fontWeight: "700",
-                    background: `${color}20`,
-                    color: color,
-                  }}>
+              <div key={label} className="prob-item">
+                <div className="prob-label-wrapper">
+                  <span 
+                    className="prob-icon"
+                    style={{ background: `${color}20`, color: color }}
+                  >
                     {icon}
                   </span>
                   {label.split(" ")[0]}
                 </div>
-                <div style={{
-                  height: "4px",
-                  background: "rgba(255, 255, 255, 0.05)",
-                  borderRadius: "3px",
-                  overflow: "hidden",
-                }}>
-                  <div style={{
-                    height: "100%",
-                    width: `${Math.max(prob * 100, 2)}%`,
-                    background: `linear-gradient(90deg, ${color}, ${color}88)`,
-                    borderRadius: "3px",
-                    transition: "width 0.4s ease",
-                  }} />
+                <div className="prob-bar-bg">
+                  <div 
+                    className="prob-bar-fill"
+                    style={{
+                      width: `${Math.max(prob * 100, 2)}%`,
+                      background: `linear-gradient(90deg, ${color}, ${color}88)`
+                    }} 
+                  />
                 </div>
-                <span style={{
-                  fontSize: "11px",
-                  fontWeight: "600",
-                  color: "white",
-                  textAlign: "right",
-                }}>
+                <span className="prob-value">
                   {(prob * 100).toFixed(1)}%
                 </span>
               </div>

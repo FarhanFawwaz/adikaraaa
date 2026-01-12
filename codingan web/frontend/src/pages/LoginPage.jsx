@@ -152,37 +152,7 @@ export const LoginPage = () => {
               </Link>
             </div>
 
-            <div className="form-group">
-              <label>Login sebagai</label>
-              <div className="role-selector">
-                <label className="role-option">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="patient"
-                    checked={formData.role === "patient"}
-                    onChange={handleChange}
-                  />
-                  <div className="role-card">
-                    <i className="fas fa-user"></i>
-                    <span>Pasien</span>
-                  </div>
-                </label>
-                <label className="role-option">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="therapist"
-                    checked={formData.role === "therapist"}
-                    onChange={handleChange}
-                  />
-                  <div className="role-card">
-                    <i className="fas fa-user-md"></i>
-                    <span>Fisioterapis</span>
-                  </div>
-                </label>
-              </div>
-            </div>
+            
 
             <button type="submit" className="btn btn-primary btn-full" disabled={isLoading}>
               {isLoading ? (
@@ -208,29 +178,11 @@ export const LoginPage = () => {
             </p>
           </div>
 
-          <div className="divider">
-            <span>atau</span>
-          </div>
 
-          <div className="demo-section">
-            <p className="demo-text">Coba demo tanpa login:</p>
-            <button
-              type="button"
-              className="btn btn-outline btn-full"
-              onClick={handleDemoMode}
-            >
-              <i className="fas fa-play-circle"></i>
-              Mode Demo
-            </button>
-          </div>
+         
         </div>
 
-        <div className="back-to-home">
-          <Link to="/">
-            <i className="fas fa-arrow-left"></i>
-            Kembali ke Beranda
-          </Link>
-        </div>
+        
       </div>
     </div>
   );

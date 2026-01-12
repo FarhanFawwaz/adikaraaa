@@ -106,106 +106,309 @@
 }
 /* FingerPiano.css - Piano Practice Mode Styles */
 
-/* Two Column Layout */
-.game-layout-two-column {
-  display: grid;
-  grid-template-columns: 400px 1fr;
-  gap: 2rem;
-  align-items: start;
-}
-
-/* Left Panel - Explanation */
-.game-explanation-panel {
+/* Row-based Layout */
+.game-layout-rows {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  position: sticky;
-  top: 100px;
+  width: 100%;
+  max-width: 1200px; /* Center content and prevent over-stretching */
+  margin: 0 auto;
+}
+
+/* Row 1: Main content - Sensor Panel + Game Canvas */
+.game-row-main {
+  display: grid;
+  grid-template-columns: 320px 1fr; /* Fixed width for sensor panel */
+  gap: 1.5rem;
+  align-items: stretch;
+}
+
+/* Left Panel - Sensor */
+.sensor-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.sensor-panel .instructions-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sensor-panel .finger-sensor-grid {
+  flex: 1;
+  justify-content: center;
 }
 
 /* Right Panel - Game Canvas */
 .game-play-panel {
-  min-height: 100%;
+  flex: 1;
+  min-width: 0; /* Prevent flex item from overflowing */
 }
 
-/* Instructions Card */
-.instructions-card {
-  background: white;
-  border-radius: 1.5rem;
+/* Row 2: Instructions - Horizontal Layout */
+.game-row-instructions {
+  width: 100%;
+}
+
+.game-row-instructions .instructions-card {
   padding: 1.5rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.25rem;
 }
 
-.instructions-card h4 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #111827;
-  margin-bottom: 1rem;
+.game-row-instructions h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--gray-800);
+}
+
+.game-row-instructions .instructions-content {
   display: flex;
   align-items: center;
+  gap: 2rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.instructions-list.horizontal {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem 2rem;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+}
+
+.instructions-list.horizontal li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--gray-600);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.instructions-list.horizontal li i {
+  color: var(--success);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.game-row-instructions .input-mode-note {
+  margin: 0;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  border-radius: 999px;
+  background: var(--primary-50);
+  color: var(--primary-700);
+  border: 1px solid var(--primary-100);
+  display: inline-flex;
+  align-items: center;
   gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.game-row-instructions .input-mode-note i {
+  color: var(--primary-500);
+}
+
+@media (max-width: 1024px) {
+  .game-row-instructions .instructions-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+  
+  .game-row-instructions .input-mode-note {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .instructions-card h4 i {
   color: #667eea;
 }
 
-/* Finger Guide List */
-.finger-guide-list {
+/* Finger Sensor Grid - Dashboard Theme */
+.finger-sensor-grid {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: var(--space-3);
 }
 
-.finger-guide-item {
+.finger-sensor-item {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.75rem;
-  background: #f9fafb;
-  border-radius: 0.75rem;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--gray-50);
+  border-radius: var(--radius-xl);
+  border: 2px solid var(--gray-100);
   transition: all 0.2s ease;
-  justify-content: space-between;
 }
 
-.finger-guide-item:hover {
-  background: #f3f4f6;
-  transform: translateX(4px);
+.finger-sensor-item:hover {
+  background: var(--gray-100);
+  border-color: var(--gray-200);
 }
 
-.finger-guide-item kbd {
-  display: inline-block;
-  padding: 0.5rem 0.75rem;
-  font-family: "Outfit", sans-serif;
-  font-size: 1rem;
+.finger-sensor-item.active {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%);
+  border-color: var(--primary-400);
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.sensor-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+  min-width: 110px;
+}
+
+.sensor-info kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  font-family: var(--font-display);
+  font-size: var(--text-base);
   font-weight: 700;
-  color: #111827;
+  color: var(--gray-700);
   background: white;
-  border: 2px solid #d1d5db;
-  border-radius: 0.5rem;
-  box-shadow: 0 2px 0 #9ca3af;
-  min-width: 40px;
-  text-align: center;
-  flex-shrink: 0;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 2px 0 var(--gray-300);
+  transition: all 0.15s ease;
 }
 
-.finger-guide-item span {
-  font-weight: 600;
-  color: #374151;
+.finger-sensor-item.active kbd {
+  background: var(--gradient-primary);
+  border-color: transparent;
+  box-shadow: 0 2px 0 rgba(102, 126, 234, 0.5), var(--shadow-glow);
+  color: white;
+}
+
+.sensor-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.sensor-labels .note-label {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 800;
+  color: var(--gray-800);
+  line-height: 1.2;
+}
+
+.sensor-labels .finger-label {
+  font-family: var(--font-primary);
+  font-size: var(--text-xs);
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.finger-sensor-item.active .note-label {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Sensor Bar */
+.sensor-bar-container {
   flex: 1;
+  height: 32px;
+  background: var(--gray-200);
+  border-radius: var(--radius-full);
+  position: relative;
+  overflow: hidden;
 }
 
-.finger-guide-item .flex-value {
-  font-family: "Outfit", sans-serif;
-  font-size: 0.875rem;
+.sensor-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-300) 0%, var(--primary-400) 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.1s ease-out;
+}
+
+.sensor-bar.active {
+  background: var(--gradient-primary);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.sensor-value {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
   font-weight: 700;
-  color: #667eea;
-  background: rgba(102, 126, 234, 0.1);
-  padding: 0.25rem 0.75rem;
-  border-radius: 0.5rem;
-  min-width: 50px;
-  text-align: center;
-  flex-shrink: 0;
+  color: var(--gray-600);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+}
+
+.finger-sensor-item.active .sensor-value {
+  color: var(--primary-700);
+}
+
+/* Threshold Info */
+.threshold-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--primary-50);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-primary);
+  font-size: var(--text-xs);
+  color: var(--primary-700);
+  border: 1px solid var(--primary-100);
+}
+
+.threshold-info i {
+  color: var(--primary-500);
+}
+
+/* Input Mode Note */
+.input-mode-note {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  background: rgba(251, 191, 36, 0.1);
+  border-left: 4px solid var(--warning);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-primary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: #92400e;
+}
+
+.input-mode-note i {
+  color: var(--warning);
+  font-size: var(--text-lg);
+}
+
+.input-mode-note.connected {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.08) 0%, rgba(168, 85, 247, 0.08) 100%);
+  border-left-color: var(--primary-500);
+  color: var(--primary-800);
+}
+
+.input-mode-note.connected i {
+  color: var(--primary-500);
 }
 
 /* Instructions List */
@@ -635,6 +838,7 @@
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
+  margin-top: 80px; /* Space for fixed navbar */
 }
 
 .game-screen {

@@ -216,37 +216,7 @@ export const RegisterPage = () => {
               </div>
             </div>
 
-            <div className="form-group">
-              <label>Daftar sebagai</label>
-              <div className="role-selector">
-                <label className="role-option">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="patient"
-                    checked={formData.role === "patient"}
-                    onChange={handleChange}
-                  />
-                  <div className="role-card">
-                    <i className="fas fa-user"></i>
-                    <span>Pasien</span>
-                  </div>
-                </label>
-                <label className="role-option">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="therapist"
-                    checked={formData.role === "therapist"}
-                    onChange={handleChange}
-                  />
-                  <div className="role-card">
-                    <i className="fas fa-user-md"></i>
-                    <span>Fisioterapis</span>
-                  </div>
-                </label>
-              </div>
-            </div>
+            
 
             <div className="form-options">
               <label className="checkbox-label">
@@ -290,12 +260,7 @@ export const RegisterPage = () => {
           </div>
         </div>
 
-        <div className="back-to-home">
-          <Link to="/">
-            <i className="fas fa-arrow-left"></i>
-            Kembali ke Beranda
-          </Link>
-        </div>
+        
       </div>
 
       {/* Health Profile Modal */}

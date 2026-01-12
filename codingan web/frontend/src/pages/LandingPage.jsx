@@ -287,7 +287,7 @@ export const LandingPage = () => {
               </div>
 
               <div className="hero-actions fade-in-up delay-3">
-                <Link to="/dashboard" className="btn btn-hero">
+                <Link to={user ? "/dashboard" : "/login"} className="btn btn-hero">
                   <i className="fas fa-rocket"></i>
                   Mulai Rehabilitasi
                   <span className="btn-glow"></span>

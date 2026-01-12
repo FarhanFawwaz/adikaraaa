@@ -72,6 +72,7 @@ services:
       - FIREBASE_PATH_LATEST=/device1/latest
     volumes:
       - ./bridge-server:/app/bridge-server
+      - bridge_server_node_modules:/app/bridge-server/node_modules
       # Require user to mount service account if using bridge-server
       # - ./bridge-server/firebase-service-account.json:/app/bridge-server/firebase-service-account.json
     dns:
@@ -100,3 +101,4 @@ services:
 volumes:
   mysql_data:
   node_modules:
+  bridge_server_node_modules:

@@ -17,11 +17,11 @@ export const FingerPiano = () => {
   const scoreRef = useRef(0);
   const streakRef = useRef(0);
   const lastFlexValuesRef = useRef({
-    thumb: 0,
-    index: 0,
-    middle: 0,
-    ring: 0,
-    pinky: 0,
+    thumb: 54,
+    index: 54,
+    middle: 54,
+    ring: 54,
+    pinky: 54,
   });
 
   const [gameState, setGameState] = useState({
@@ -39,11 +39,11 @@ export const FingerPiano = () => {
   const [hitEffect, setHitEffect] = useState({ show: false, emoji: "✨" });
   const [wsConnected, setWsConnected] = useState(false);
   const [flexValues, setFlexValues] = useState({
-    thumb: 0,
-    index: 0,
-    middle: 0,
-    ring: 0,
-    pinky: 0,
+    thumb: 54,
+    index: 54,
+    middle: 54,
+    ring: 54,
+    pinky: 54,
   });
 
   const NOTE_FREQUENCIES = {
@@ -62,8 +62,9 @@ export const FingerPiano = () => {
     g: "G",
   };
 
-  // Flex threshold untuk deteksi gerakan jari
-  const FLEX_THRESHOLD = 500; // Adjust sesuai kebutuhan
+  // Flex detection - baseline is 54, detect significant deviation
+  const BASE_VALUE = 54;
+  const FLEX_DEVIATION_THRESHOLD = 10; // Trigger when value deviates more than this from baseline
 
   // Map finger to note
   const FINGER_TO_NOTE = {
@@ -106,27 +107,47 @@ export const FingerPiano = () => {
         try {
           const data = JSON.parse(event.data);
 
-          if (data.type === "flex" && data.values) {
-            const newFlexValues = {
-              thumb: data.values.thumb ?? lastFlexValuesRef.current.thumb,
-              index: data.values.index ?? lastFlexValuesRef.current.index,
-              middle: data.values.middle ?? lastFlexValuesRef.current.middle,
-              ring: data.values.ring ?? lastFlexValuesRef.current.ring,
-              pinky: data.values.pinky ?? lastFlexValuesRef.current.pinky,
-            };
+          // Handle multi-finger data (mock) or single flex value (Firebase)
+          if (data.type === "flex") {
+            let newFlexValues = { ...lastFlexValuesRef.current };
 
-            // Detect finger bending (trigger note)
+            if (data.values) {
+              // Multi-finger data (mock)
+              newFlexValues = {
+                thumb: data.values.thumb ?? lastFlexValuesRef.current.thumb,
+                index: data.values.index ?? lastFlexValuesRef.current.index,
+                middle: data.values.middle ?? lastFlexValuesRef.current.middle,
+                ring: data.values.ring ?? lastFlexValuesRef.current.ring,
+                pinky: data.values.pinky ?? lastFlexValuesRef.current.pinky,
+              };
+            } else if (data.value !== undefined) {
+              // Single flex sensor from Firebase - apply to middle finger
+              const rawValue = data.value;
+              console.log('[FingerPiano] Flex raw value:', rawValue);
+              newFlexValues = {
+                thumb: 54,
+                index: 54,
+                middle: rawValue,
+                ring: 54,
+                pinky: 54,
+              };
+            }
+
+            // Detect finger bending (trigger note when deviation from baseline)
             Object.keys(newFlexValues).forEach((finger) => {
               const currentValue = newFlexValues[finger];
               const lastValue = lastFlexValuesRef.current[finger];
+              const currentDeviation = Math.abs(currentValue - BASE_VALUE);
+              const lastDeviation = Math.abs(lastValue - BASE_VALUE);
 
-              // Deteksi jika jari ditekuk (nilai flex meningkat melewati threshold)
+              // Trigger when crossing the threshold (going from not active to active)
               if (
-                currentValue > FLEX_THRESHOLD &&
-                lastValue <= FLEX_THRESHOLD
+                currentDeviation > FLEX_DEVIATION_THRESHOLD &&
+                lastDeviation <= FLEX_DEVIATION_THRESHOLD
               ) {
                 const note = FINGER_TO_NOTE[finger];
                 if (note) {
+                  console.log(`[FingerPiano] Finger ${finger} triggered note ${note}`);
                   checkHit(note);
                 }
               }
@@ -400,142 +421,133 @@ export const FingerPiano = () => {
 
       <main className="game-container">
         <div className="game-screen" id="playScreen">
-          <div className="game-layout-two-column">
-            {/* Kolom Kiri - Penjelasan Permainan */}
-            <div className="game-explanation-panel">
-              <div className="instructions-card">
-                <h4>
-                  <i className="fas fa-hand-sparkles"></i> Panduan Jari
-                </h4>
-                <div className="finger-guide-list">
-                  <div className="finger-guide-item">
-                    <kbd>A</kbd>
-                    <span>C - Jempol</span>
-                    <span className="flex-value">{flexValues.thumb}</span>
+          <div className="game-layout-rows">
+            {/* Row 1: Sensor Panel + Game Canvas */}
+            <div className="game-row-main">
+              {/* Left - Sensor Panel */}
+              <div className="sensor-panel">
+                <div className="instructions-card">
+                  
+                  <div className="finger-sensor-grid">
+                    {[
+                      { key: "thumb", note: "C", label: "Jempol" },
+                      { key: "index", note: "D", label: "Telunjuk" },
+                      { key: "middle", note: "E", label: "Tengah" },
+                      { key: "ring", note: "F", label: "Manis" },
+                      { key: "pinky", note: "G", label: "Kelingking" },
+                    ].map(({ key, note, label }) => {
+                      const value = flexValues[key];
+                      const deviation = Math.abs(value - BASE_VALUE);
+                      const isActive = deviation > FLEX_DEVIATION_THRESHOLD;
+                      const percentage = Math.min(100, (deviation / 50) * 100);
+                      
+                      return (
+                        <div key={key} className={`finger-sensor-item ${isActive ? 'active' : ''}`}>
+                          <div className="sensor-info">
+                            <div className="sensor-labels">
+                              <span className="note-label">{note}</span>
+                              <span className="finger-label">{label}</span>
+                            </div>
+                          </div>
+                          <div className="sensor-bar-container">
+                            <div 
+                              className={`sensor-bar ${isActive ? 'active' : ''}`}
+                              style={{ width: `${percentage}%` }}
+                            />
+                            <span className="sensor-value">{value}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  <div className="threshold-info">
+                    <i className="fas fa-info-circle"></i>
+                    <span>Baseline: {BASE_VALUE} | Threshold: ±{FLEX_DEVIATION_THRESHOLD}</span>
                   </div>
-                  <div className="finger-guide-item">
-                    <kbd>S</kbd>
-                    <span>D - Telunjuk</span>
-                    <span className="flex-value">{flexValues.index}</span>
-                  </div>
-                  <div className="finger-guide-item">
-                    <kbd>D</kbd>
-                    <span>E - Tengah</span>
-                    <span className="flex-value">{flexValues.middle}</span>
-                  </div>
-                  <div className="finger-guide-item">
-                    <kbd>F</kbd>
-                    <span>F - Manis</span>
-                    <span className="flex-value">{flexValues.ring}</span>
-                  </div>
-                  <div className="finger-guide-item">
-                    <kbd>G</kbd>
-                    <span>G - Kelingking</span>
-                    <span className="flex-value">{flexValues.pinky}</span>
                   </div>
                 </div>
               </div>
 
+              {/* Right - Game Canvas */}
+              <div className="game-play-panel">
+                <div className="game-canvas-container">
+                  <div className="next-note-hint">{nextNoteHint}</div>
+
+                  <div className="note-display">
+                    <canvas ref={canvasRef} width="800" height="400"></canvas>
+                    <div className="timing-guide"></div>
+                  </div>
+
+                  <header className="game-header compact">
+                    <div className="game-header-left">
+                      
+                      <div className="game-title-header">
+                        <div className="game-icon-small">
+                          <i className="fas fa-music"></i>
+                        </div>
+                        <div>
+                          <h1>Piano Practice Mode</h1>
+                          <p>Latihan Dasar - Super Easy!</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="game-header-right">
+                      <div className={`ws-status ${wsConnected ? "connected" : "disconnected"}`}>
+                        <i className={`fas ${wsConnected ? "fa-wifi" : "fa-wifi-slash"}`}></i>
+                        <span>{wsConnected ? "Connected" : "Disconnected"}</span>
+                      </div>
+                      <div className="game-stat">
+                        <i className="fas fa-star"></i>
+                        <span id="scoreDisplay">{gameState.score}</span>
+                      </div>
+                      <div className="game-stat">
+                        <i className="fas fa-fire"></i>
+                        <span id="streakDisplay">{gameState.streak}</span>
+                      </div>
+                    </div>
+                  </header>
+
+                  <div className="game-progress">
+                    {!gameState.isPlaying && (
+                      <button className="btn btn-hero mt-3" onClick={startPractice}>
+                        <i className="fas fa-play"></i>
+                        Mulai Latihan
+                      </button>
+                    )}
+                    <div className={`feedback-display ${feedback.type}`}>
+                      {feedback.message}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Row 2: Instructions */}
+            <div className="game-row-instructions">
               <div className="instructions-card">
                 <h4>
                   <i className="fas fa-bullseye"></i> Cara Bermain
                 </h4>
-                <ul className="instructions-list">
-                  <li>
-                    <i className="fas fa-check-circle"></i> Tekan tombol{" "}
-                    <strong>Mulai Latihan</strong>
-                  </li>
-                  <li>
-                    <i className="fas fa-check-circle"></i> Perhatikan note yang
-                    turun
-                  </li>
-                  <li>
-                    <i className="fas fa-check-circle"></i>
-                    {wsConnected ? (
-                      <>
-                        Tekuk jari saat masuk <strong>zona hijau</strong>
-                      </>
-                    ) : (
-                      <>
-                        Tekan <strong>keyboard</strong> saat masuk zona hijau
-                      </>
-                    )}
-                  </li>
-                  <li>
-                    <i className="fas fa-check-circle"></i> Kumpulkan streak
-                    untuk skor maksimal
-                  </li>
-                </ul>
-                {!wsConnected && (
-                  <div className="input-mode-note">
-                    <i className="fas fa-keyboard"></i>
-                    <span>Mode Keyboard (Sarung tangan tidak terhubung)</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Kolom Kanan - Canvas Permainan */}
-            <div className="game-play-panel">
-              <div className="game-canvas-container">
-                <div className="next-note-hint">{nextNoteHint}</div>
-
-                <div className="note-display">
-                  <canvas ref={canvasRef} width="800" height="400"></canvas>
-                  <div className="timing-guide"></div>
-                </div>
-
-                {/* Pindahkan game header ke bawah kanvas permainan */}
-                <header className="game-header compact">
-                  <div className="game-header-left">
-                    <Link to="/dashboard" className="btn-back">
-                      <i className="fas fa-arrow-left"></i>
-                      Dashboard
-                    </Link>
-                    <div className="game-title-header">
-                      <div className="game-icon-small">
-                        <i className="fas fa-music"></i>
-                      </div>
-                      <div>
-                        <h1>Piano Practice Mode</h1>
-                        <p>Latihan Dasar - Super Easy!</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="game-header-right">
-                    <div
-                      className={`ws-status ${
-                        wsConnected ? "connected" : "disconnected"
-                      }`}
-                    >
-                      <i
-                        className={`fas ${
-                          wsConnected ? "fa-wifi" : "fa-wifi-slash"
-                        }`}
-                      ></i>
-                      <span>{wsConnected ? "Connected" : "Disconnected"}</span>
-                    </div>
-                    <div className="game-stat">
-                      <i className="fas fa-star"></i>
-                      <span id="scoreDisplay">{gameState.score}</span>
-                    </div>
-                    <div className="game-stat">
-                      <i className="fas fa-fire"></i>
-                      <span id="streakDisplay">{gameState.streak}</span>
-                    </div>
-                  </div>
-                </header>
-
-                <div className="game-progress">
-                  {!gameState.isPlaying && (
-                    <button className="btn btn-hero" onClick={startPractice}>
-                      <i className="fas fa-play"></i>
-                      Mulai Latihan
-                    </button>
-                  )}
-                  <div className={`feedback-display ${feedback.type}`}>
-                    {feedback.message}
-                  </div>
+                <div className="instructions-content">
+                  <ul className="instructions-list horizontal">
+                    <li>
+                      <i className="fas fa-check-circle"></i> Tekan tombol <strong>Mulai Latihan</strong>
+                    </li>
+                    <li>
+                      <i className="fas fa-check-circle"></i> Perhatikan note yang turun
+                    </li>
+                    <li>
+                      <i className="fas fa-check-circle"></i>
+                      {wsConnected ? (
+                        <>Tekuk jari saat masuk <strong>zona hijau</strong></>
+                      ) : (
+                        <>Tekan <strong>keyboard</strong> saat masuk zona hijau</>
+                      )}
+                    </li>
+                    <li>
+                      <i className="fas fa-check-circle"></i> Kumpulkan streak untuk skor maksimal
+                    </li>
+                  </ul>
+                  
                 </div>
               </div>
             </div>

@@ -72,10 +72,10 @@ export const Navbar = () => {
 
   return (
     <nav className={`navbar ${isScrolled ? "scrolled" : ""}`} id="navbar">
-      <div className="container">
+      <div className="nav-container-fluid">
         <div className="nav-content">
-          <Link to="/" className="logo">
-            <i className="fas fa-hand-sparkles"></i>
+          <Link to="/" className="logo">            
+            <img src="../assets/images/image.png" alt="" />
             <span>
               NeuroRehab<span className="gradient-text">AI</span>
             </span>
@@ -110,11 +110,18 @@ export const Navbar = () => {
                 Fitur
               </a>
               <a
+                href="#rehabilitation"
+                className="nav-link"
+                onClick={(e) => handleNavClick(e, "rehabilitation")}
+              >
+                Rehabilitasi
+              </a>
+              <a
                 href="#games"
                 className="nav-link"
                 onClick={(e) => handleNavClick(e, "games")}
               >
-                Game Terapi
+                Game
               </a>
               <a
                 href="#technology"

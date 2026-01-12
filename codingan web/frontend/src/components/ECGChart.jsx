@@ -12,18 +12,21 @@ export const ECGChart = ({ ecgData, isConnected }) => {
   const normalizeECGValue = (value, canvasHeight) => {
     // Expected range dari Firebase: ~1000-3000 (centered around 2000)
     // Apply amplification to make small changes more visible
-    const baseline = 2000; // Center baseline
+    const baseline = 1500; // Center baseline
     const deviation = value - baseline;
     const amplification = 3; // Amplify changes by 3x
-    const amplified = baseline + (deviation * amplification);
+    const amplified = baseline + deviation * amplification;
 
     // Map to canvas height with some margin
-    const minValue = 0;
-    const maxValue = 4095;
+    const minValue = -18 * baseline;
+    const maxValue = 18 * baseline;
     const clampedValue = Math.max(minValue, Math.min(maxValue, amplified));
 
     // Invert for canvas (0 at top)
-    const normalized = canvasHeight - (clampedValue / maxValue) * canvasHeight;
+    // Normalize based on total range (maxValue - minValue)
+    const range = maxValue - minValue;
+    const normalized =
+      canvasHeight - ((clampedValue - minValue) / range) * canvasHeight;
     return normalized;
   };
 
@@ -32,8 +35,9 @@ export const ECGChart = ({ ecgData, isConnected }) => {
     if (isConnected && ecgData?.value !== undefined) {
       latestValueRef.current = ecgData.value;
       // Debug logging
-      if (Math.random() < 0.01) { // Log 1% of the time to avoid spam
-        console.log('[ECG] Received value:', ecgData.value);
+      if (Math.random() < 0.01) {
+        // Log 1% of the time to avoid spam
+        console.log("[ECG] Received value:", ecgData.value);
       }
     }
   }, [ecgData, isConnected]);
@@ -62,7 +66,10 @@ export const ECGChart = ({ ecgData, isConnected }) => {
 
       // Add new data point at current position
       if (isConnected && latestValueRef.current !== null) {
-        const normalizedValue = normalizeECGValue(latestValueRef.current, height);
+        const normalizedValue = normalizeECGValue(
+          latestValueRef.current,
+          height
+        );
         dataPointsRef.current[pos] = normalizedValue;
       } else {
         dataPointsRef.current[pos] = height / 2;

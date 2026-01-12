@@ -95,7 +95,11 @@ export const FingerPiano = () => {
         window.location.port === "5173" || window.location.port === ""
           ? "8080"
           : window.location.port;
-      const wsUrl = `${wsScheme}://${host}:${port}/api/ws`;
+      const deviceId =
+        (localStorage.getItem("deviceId") || "device1").trim() || "device1";
+      const wsUrl = `${wsScheme}://${host}:${port}/api/ws?device=${encodeURIComponent(
+        deviceId
+      )}`;
       wsRef.current = new WebSocket(wsUrl);
 
       wsRef.current.onopen = () => {
@@ -109,6 +113,19 @@ export const FingerPiano = () => {
 
           // Handle multi-finger data (mock) or single flex value (Firebase)
           if (data.type === "flex") {
+            if (data.firebase_connected === false) {
+              const cleared = {
+                thumb: BASE_VALUE,
+                index: BASE_VALUE,
+                middle: BASE_VALUE,
+                ring: BASE_VALUE,
+                pinky: BASE_VALUE,
+              };
+              lastFlexValuesRef.current = cleared;
+              setFlexValues(cleared);
+              return;
+            }
+
             let newFlexValues = { ...lastFlexValuesRef.current };
 
             if (data.values) {
@@ -121,16 +138,54 @@ export const FingerPiano = () => {
                 pinky: data.values.pinky ?? lastFlexValuesRef.current.pinky,
               };
             } else if (data.value !== undefined) {
-              // Single flex sensor from Firebase - apply to middle finger
+              // Single flex sensor "Smart Mapping"
               const rawValue = data.value;
-              console.log('[FingerPiano] Flex raw value:', rawValue);
-              newFlexValues = {
-                thumb: 54,
-                index: 54,
-                middle: rawValue,
-                ring: 54,
-                pinky: 54,
-              };
+
+              // Smart mapping: If this single sensor flexes, assuming it maps to the
+              // note that is currently in the "hit zone".
+              // We need to find if there is a note reachable
+              let targetNote = null;
+
+              // Check current valid hit window
+              const currentNoteName =
+                sequenceRef.current[currentNoteRef.current % 5];
+              const distance = Math.abs(noteYRef.current - targetYRef.current);
+
+              if (isPlayingRef.current && distance < 80) {
+                // We are in hit zone, map to the correct finger for this note
+                // targetNote = currentNoteName;
+                // Find which finger is responsible for this note
+                // FINGER_TO_NOTE reverse mapping needed?
+                // FINGER_TO_NOTE = { thumb: C, index: D, ... }
+                // so C -> thumb
+                const NOTE_TO_FINGER = {
+                  C: "thumb",
+                  D: "index",
+                  E: "middle",
+                  F: "ring",
+                  G: "pinky",
+                };
+                const targetFinger = NOTE_TO_FINGER[currentNoteName];
+
+                newFlexValues = {
+                  thumb: 54,
+                  index: 54,
+                  middle: 54,
+                  ring: 54,
+                  pinky: 54,
+                  [targetFinger]: rawValue, // Assign raw value to the CORRECT finger
+                };
+              } else {
+                // Not in hit zone or not playing
+                // Map to Middle (E) as default visual feedback
+                newFlexValues = {
+                  thumb: 54,
+                  index: 54,
+                  middle: rawValue,
+                  ring: 54,
+                  pinky: 54,
+                };
+              }
             }
 
             // Detect finger bending (trigger note when deviation from baseline)
@@ -147,7 +202,9 @@ export const FingerPiano = () => {
               ) {
                 const note = FINGER_TO_NOTE[finger];
                 if (note) {
-                  console.log(`[FingerPiano] Finger ${finger} triggered note ${note}`);
+                  console.log(
+                    `[FingerPiano] Finger ${finger} triggered note ${note}`
+                  );
                   checkHit(note);
                 }
               }
@@ -427,7 +484,6 @@ export const FingerPiano = () => {
               {/* Left - Sensor Panel */}
               <div className="sensor-panel">
                 <div className="instructions-card">
-                  
                   <div className="finger-sensor-grid">
                     {[
                       { key: "thumb", note: "C", label: "Jempol" },
@@ -440,9 +496,14 @@ export const FingerPiano = () => {
                       const deviation = Math.abs(value - BASE_VALUE);
                       const isActive = deviation > FLEX_DEVIATION_THRESHOLD;
                       const percentage = Math.min(100, (deviation / 50) * 100);
-                      
+
                       return (
-                        <div key={key} className={`finger-sensor-item ${isActive ? 'active' : ''}`}>
+                        <div
+                          key={key}
+                          className={`finger-sensor-item ${
+                            isActive ? "active" : ""
+                          }`}
+                        >
                           <div className="sensor-info">
                             <div className="sensor-labels">
                               <span className="note-label">{note}</span>
@@ -450,8 +511,10 @@ export const FingerPiano = () => {
                             </div>
                           </div>
                           <div className="sensor-bar-container">
-                            <div 
-                              className={`sensor-bar ${isActive ? 'active' : ''}`}
+                            <div
+                              className={`sensor-bar ${
+                                isActive ? "active" : ""
+                              }`}
                               style={{ width: `${percentage}%` }}
                             />
                             <span className="sensor-value">{value}</span>
@@ -459,10 +522,13 @@ export const FingerPiano = () => {
                         </div>
                       );
                     })}
-                  <div className="threshold-info">
-                    <i className="fas fa-info-circle"></i>
-                    <span>Baseline: {BASE_VALUE} | Threshold: ±{FLEX_DEVIATION_THRESHOLD}</span>
-                  </div>
+                    <div className="threshold-info">
+                      <i className="fas fa-info-circle"></i>
+                      <span>
+                        Baseline: {BASE_VALUE} | Threshold: ±
+                        {FLEX_DEVIATION_THRESHOLD}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -479,7 +545,6 @@ export const FingerPiano = () => {
 
                   <header className="game-header compact">
                     <div className="game-header-left">
-                      
                       <div className="game-title-header">
                         <div className="game-icon-small">
                           <i className="fas fa-music"></i>
@@ -491,9 +556,19 @@ export const FingerPiano = () => {
                       </div>
                     </div>
                     <div className="game-header-right">
-                      <div className={`ws-status ${wsConnected ? "connected" : "disconnected"}`}>
-                        <i className={`fas ${wsConnected ? "fa-wifi" : "fa-wifi-slash"}`}></i>
-                        <span>{wsConnected ? "Connected" : "Disconnected"}</span>
+                      <div
+                        className={`ws-status ${
+                          wsConnected ? "connected" : "disconnected"
+                        }`}
+                      >
+                        <i
+                          className={`fas ${
+                            wsConnected ? "fa-wifi" : "fa-wifi-slash"
+                          }`}
+                        ></i>
+                        <span>
+                          {wsConnected ? "Connected" : "Disconnected"}
+                        </span>
                       </div>
                       <div className="game-stat">
                         <i className="fas fa-star"></i>
@@ -508,7 +583,10 @@ export const FingerPiano = () => {
 
                   <div className="game-progress">
                     {!gameState.isPlaying && (
-                      <button className="btn btn-hero mt-3" onClick={startPractice}>
+                      <button
+                        className="btn btn-hero mt-3"
+                        onClick={startPractice}
+                      >
                         <i className="fas fa-play"></i>
                         Mulai Latihan
                       </button>
@@ -530,24 +608,30 @@ export const FingerPiano = () => {
                 <div className="instructions-content">
                   <ul className="instructions-list horizontal">
                     <li>
-                      <i className="fas fa-check-circle"></i> Tekan tombol <strong>Mulai Latihan</strong>
+                      <i className="fas fa-check-circle"></i> Tekan tombol{" "}
+                      <strong>Mulai Latihan</strong>
                     </li>
                     <li>
-                      <i className="fas fa-check-circle"></i> Perhatikan note yang turun
+                      <i className="fas fa-check-circle"></i> Perhatikan note
+                      yang turun
                     </li>
                     <li>
                       <i className="fas fa-check-circle"></i>
                       {wsConnected ? (
-                        <>Tekuk jari saat masuk <strong>zona hijau</strong></>
+                        <>
+                          Tekuk jari saat masuk <strong>zona hijau</strong>
+                        </>
                       ) : (
-                        <>Tekan <strong>keyboard</strong> saat masuk zona hijau</>
+                        <>
+                          Tekan <strong>keyboard</strong> saat masuk zona hijau
+                        </>
                       )}
                     </li>
                     <li>
-                      <i className="fas fa-check-circle"></i> Kumpulkan streak untuk skor maksimal
+                      <i className="fas fa-check-circle"></i> Kumpulkan streak
+                      untuk skor maksimal
                     </li>
                   </ul>
-                  
                 </div>
               </div>
             </div>

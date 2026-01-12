@@ -53,7 +53,11 @@ export const FruitCatch = () => {
         window.location.port === "5173" || window.location.port === ""
           ? "8080"
           : window.location.port;
-      const wsUrl = `${wsScheme}://${host}:${port}/api/ws`;
+      const deviceId =
+        (localStorage.getItem("deviceId") || "device1").trim() || "device1";
+      const wsUrl = `${wsScheme}://${host}:${port}/api/ws?device=${encodeURIComponent(
+        deviceId
+      )}`;
       wsRef.current = new WebSocket(wsUrl);
 
       wsRef.current.onopen = () => setWsConnected(true);
@@ -61,6 +65,20 @@ export const FruitCatch = () => {
         try {
           const data = JSON.parse(event.data);
           if (data.type === "flex" && data.values) {
+            if (data.firebase_connected === false) {
+              const cleared = {
+                thumb: 0,
+                index: 0,
+                middle: 0,
+                ring: 0,
+                pinky: 0,
+              };
+              gripActiveRef.current = false;
+              lastFlexValuesRef.current = cleared;
+              setFlexValues(cleared);
+              return;
+            }
+
             const newFlex = {
               thumb: data.values.thumb ?? lastFlexValuesRef.current.thumb,
               index: data.values.index ?? lastFlexValuesRef.current.index,
@@ -233,11 +251,10 @@ export const FruitCatch = () => {
 
   return (
     <div className="game-body">
-        <Navbar />
+      <Navbar />
       <main className="game-container mt-5">
         <div className="game-screen">
           <div className="screen-content">
-            
             <h2>Fruit Catch</h2>
             <p className="game-description">
               Genggam tangan saat buah melewati garis hijau. Anda bisa gunakan
@@ -253,7 +270,6 @@ export const FruitCatch = () => {
 
               {/* Info bar under canvas */}
               <header className="game-header compact text-center">
-                
                 <div className="game-header-right">
                   <div
                     className={`ws-status ${

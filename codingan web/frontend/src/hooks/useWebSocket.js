@@ -1,6 +1,25 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
-export const useWebSocket = (url = 'ws://localhost:8080/api/ws') => {
+const buildWsUrl = (deviceId) => {
+  const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  const host = window.location.hostname || 'localhost';
+  const port =
+    window.location.port === '5173' || window.location.port === ''
+      ? '8080'
+      : window.location.port;
+
+  const safeDevice = (deviceId || '').trim() || 'device1';
+  return `${wsScheme}://${host}:${port}/api/ws?device=${encodeURIComponent(safeDevice)}`;
+};
+
+export const useWebSocket = (options = undefined) => {
+  const resolvedUrl = useMemo(() => {
+    if (typeof options === 'string') return options;
+
+    const deviceId = options?.deviceId;
+    const explicitUrl = options?.url;
+    return explicitUrl || buildWsUrl(deviceId);
+  }, [typeof options === 'string' ? options : options?.url, typeof options === 'string' ? undefined : options?.deviceId]);
   const [isConnected, setIsConnected] = useState(false);
   const [isFirebaseConnected, setIsFirebaseConnected] = useState(true);
   const [ecgData, setEcgData] = useState(null);
@@ -21,8 +40,8 @@ export const useWebSocket = (url = 'ws://localhost:8080/api/ws') => {
     }
 
     try {
-      console.log(`[WebSocket] Connecting to ${url}...`);
-      const ws = new WebSocket(url);
+      console.log(`[WebSocket] Connecting to ${resolvedUrl}...`);
+      const ws = new WebSocket(resolvedUrl);
 
       ws.onopen = () => {
         console.log('[WebSocket] ✓ Connected!');
@@ -44,22 +63,32 @@ export const useWebSocket = (url = 'ws://localhost:8080/api/ws') => {
           switch (data.type) {
             case 'ecg':
               setEcgData(data);
-              setIsFirebaseConnected(true);
-              // Reset timeout - if we receive data, Firebase is connected
-              if (firebaseTimeoutRef.current) {
-                clearTimeout(firebaseTimeoutRef.current);
+              {
+                const firebaseConnected = data.firebase_connected ?? true;
+                setIsFirebaseConnected(firebaseConnected);
+
+                // Reset timeout only if backend says Firebase is connected
+                if (firebaseConnected) {
+                  if (firebaseTimeoutRef.current) {
+                    clearTimeout(firebaseTimeoutRef.current);
+                  }
+                  firebaseTimeoutRef.current = setTimeout(() => {
+                    setIsFirebaseConnected(false);
+                  }, 5000);
+                } else if (firebaseTimeoutRef.current) {
+                  clearTimeout(firebaseTimeoutRef.current);
+                  firebaseTimeoutRef.current = null;
+                }
               }
-              firebaseTimeoutRef.current = setTimeout(() => {
-                setIsFirebaseConnected(false);
-              }, 5000); // If no data for 5 seconds, mark as disconnected
+              // Reset timeout - if we receive data, Firebase is connected
               break;
             case 'flex':
               setFlexData(data);
-              setIsFirebaseConnected(true);
+              setIsFirebaseConnected(data.firebase_connected ?? true);
               break;
             case 'vitals':
               setVitalsData(data);
-              setIsFirebaseConnected(true);
+              setIsFirebaseConnected(data.firebase_connected ?? true);
               break;
             case 'prediction':
               setPredictionData(data.data);
@@ -103,7 +132,7 @@ export const useWebSocket = (url = 'ws://localhost:8080/api/ws') => {
       setError(err);
       reconnectTimerRef.current = setTimeout(connect, reconnectInterval);
     }
-  }, [url]);
+  }, [resolvedUrl]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimerRef.current) {

@@ -40,10 +40,11 @@
     padding: 0 var(--space-8);
 }
 
-.nav-content > .nav-links {
+.nav-content>.nav-links {
     /* Fixed: Removed absolute positioning to prevent overlap */
     margin: 0 auto;
 }
+
 .logo {
     display: flex;
     align-items: center;
@@ -1080,5 +1081,187 @@
         width: 32px;
         height: 32px;
         font-size: var(--text-lg);
+    }
+}
+
+/* ============================================
+   Spiral Rotating Images Animation
+   ============================================ */
+
+/* Container with grid layout for equal width cards */
+.spiral-images-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8);
+    margin-bottom: var(--space-12);
+    perspective: 2000px;
+    transform-style: preserve-3d;
+}
+
+/* Individual card for each image */
+.spiral-image-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(249, 250, 251, 0.9));
+    border-radius: var(--radius-3xl);
+    padding: var(--space-8);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    border: 2px solid rgba(102, 126, 234, 0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.spiral-image-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 0;
+}
+
+.spiral-image-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 60px rgba(102, 126, 234, 0.2);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+.spiral-image-card:hover::before {
+    opacity: 1;
+}
+
+/* Inner card content */
+.spiral-card-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+    position: relative;
+    z-index: 1;
+}
+
+/* Card label */
+.spiral-card-label {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--primary-700);
+    background: rgba(102, 126, 234, 0.1);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-full);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Spinning image animation */
+/* Spinning image animation - Static now */
+.spinning-image {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    aspect-ratio: 1;
+    object-fit: contain;
+    /* transform-style: preserve-3d; -> Removed 3D style for flat static image */
+    /* animation: none; -> Explicitly none */
+    filter: drop-shadow(0 15px 40px rgba(102, 126, 234, 0.4));
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.03), rgba(118, 75, 162, 0.03));
+    border-radius: var(--radius-2xl);
+    padding: var(--space-6);
+    transform: scale(1);
+    /* Ensure it's static upright */
+}
+
+/* Reverse animation for second image */
+.spinning-image-reverse {
+    animation-direction: reverse;
+}
+
+.spinning-image::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: var(--radius-2xl);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.spiral-image-card:hover .spinning-image {
+    transform: scale(1.05);
+    filter: drop-shadow(0 20px 50px rgba(102, 126, 234, 0.6));
+}
+
+.spiral-image-card:hover .spinning-image::before {
+    opacity: 0.1;
+}
+
+/* Keyframes for continuous 3D spiral rotation */
+@keyframes spiralRotate {
+    0% {
+        transform: rotateY(0deg) rotateZ(0deg) translateZ(0px);
+    }
+
+    25% {
+        transform: rotateY(90deg) rotateZ(90deg) translateZ(60px);
+    }
+
+    50% {
+        transform: rotateY(180deg) rotateZ(180deg) translateZ(0px);
+    }
+
+    75% {
+        transform: rotateY(270deg) rotateZ(270deg) translateZ(60px);
+    }
+
+    100% {
+        transform: rotateY(360deg) rotateZ(360deg) translateZ(0px);
+    }
+}
+
+/* Responsive design for spiral image cards */
+@media (max-width: 1024px) {
+    .spiral-images-container {
+        gap: var(--space-6);
+    }
+
+    .spiral-image-card {
+        padding: var(--space-6);
+    }
+
+    .spinning-image {
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .spiral-images-container {
+        grid-template-columns: 1fr;
+        gap: var(--space-6);
+        margin-bottom: var(--space-8);
+    }
+
+    .spiral-image-card {
+        padding: var(--space-6);
+    }
+
+    .spinning-image {
+        max-width: 280px;
+    }
+}
+
+@media (max-width: 480px) {
+    .spiral-image-card {
+        padding: var(--space-4);
+    }
+
+    .spinning-image {
+        max-width: 240px;
+        padding: var(--space-4);
+    }
+
+    .spiral-card-label {
+        font-size: var(--text-xs);
+        padding: var(--space-1) var(--space-3);
     }
 }

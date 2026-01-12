@@ -357,18 +357,27 @@ export const LandingPage = () => {
       <section className="features" id="features">
         <div className="container">
           <div className="section-header">
-            <div className="flex justify-center items-center mb-6 gap-8">
-              <img
-                src="/assets/images/1.png"
-                alt="Decoration 1"
-                className="spinning-image w-40 h-40 object-contain"
-              />
-              <img
-                src="/assets/images/2.png"
-                alt="Decoration 2"
-                className="spinning-image w-40 h-40 object-contain"
-                style={{ animationDirection: 'reverse' }}
-              />
+            <div className="spiral-images-container ">
+              <div className="spiral-image-card">
+                <div className="spiral-card-inner">
+                  <img
+                    src="/assets/images/1.png"
+                    alt="NeuroRehab Glove - Front View"
+                    className="spinning-image"
+                  />
+                  <div className="spiral-card-label">Tampak Depan</div>
+                </div>
+              </div>
+              <div className="spiral-image-card">
+                <div className="spiral-card-inner">
+                  <img
+                    src="/assets/images/2.png"
+                    alt="NeuroRehab Glove - Side View"
+                    className="spinning-image spinning-image-reverse"
+                  />
+                  <div className="spiral-card-label">Tampak Samping</div>
+                </div>
+              </div>
             </div>
             <span className="section-subtitle">Mengapa Pilih Kami?</span>
             <h2 className="section-title">

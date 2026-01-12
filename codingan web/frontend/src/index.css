@@ -29,3 +29,19 @@
     @apply antialiased text-text-dark bg-light;
   }
 }
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinning-image {
+  animation: spin 10s linear infinite;
+  display: inline-block;
+  margin: 0 10px;
+}

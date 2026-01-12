@@ -292,7 +292,7 @@ export const LandingPage = () => {
                   Mulai Rehabilitasi
                   <span className="btn-glow"></span>
                 </Link>
-                
+
               </div>
             </div>
 
@@ -357,6 +357,19 @@ export const LandingPage = () => {
       <section className="features" id="features">
         <div className="container">
           <div className="section-header">
+            <div className="flex justify-center items-center mb-6 gap-8">
+              <img
+                src="/assets/images/1.png"
+                alt="Decoration 1"
+                className="spinning-image w-40 h-40 object-contain"
+              />
+              <img
+                src="/assets/images/2.png"
+                alt="Decoration 2"
+                className="spinning-image w-40 h-40 object-contain"
+                style={{ animationDirection: 'reverse' }}
+              />
+            </div>
             <span className="section-subtitle">Mengapa Pilih Kami?</span>
             <h2 className="section-title">
               Fitur <span className="gradient-text">Unggulan</span>
@@ -583,7 +596,7 @@ export const LandingPage = () => {
       </section>
 
       {/* Footer */}
-      
+
     </div>
   );
 };

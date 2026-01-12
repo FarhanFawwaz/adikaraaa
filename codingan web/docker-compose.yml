@@ -50,6 +50,9 @@ services:
       - DB_NAME=adikaraaa_db
       - DB_USER=adikaraaa
       - DB_PASSWORD=adikaraaa123
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     restart: unless-stopped
     depends_on:
       mysql:
@@ -72,6 +75,9 @@ services:
       - bridge_server_node_modules:/app/bridge-server/node_modules
       # Require user to mount service account if using bridge-server
       # - ./bridge-server/firebase-service-account.json:/app/bridge-server/firebase-service-account.json
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     restart: unless-stopped
 
   frontend:

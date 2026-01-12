@@ -25,7 +25,7 @@ npm install
 
 ### 2. Download Firebase Service Account Key
 
-1. Buka [Firebase Console](https://console.firebase.google.com/project/adikara-8fedf/settings/serviceaccounts/adminsdk)
+1. Buka [Firebase Console](https://console.firebase.google.com/project/neurorehab-58cd1/settings/serviceaccounts/adminsdk)
 2. Pilih tab **"Service accounts"**
 3. Klik **"Generate new private key"**
 4. Download file JSON yang dihasilkan
@@ -39,8 +39,8 @@ npm install
 File `.env` sudah include dengan konfigurasi default:
 
 ```env
-FIREBASE_DATABASE_URL=https://adikara-8fedf-default-rtdb.asia-southeast1.firebasedatabase.app/
-FIREBASE_PROJECT_ID=adikara-8fedf
+FIREBASE_DATABASE_URL=https://neurorehab-58cd1-default-rtdb.asia-southeast1.firebasedatabase.app/
+FIREBASE_PROJECT_ID=neurorehab-58cd1
 WS_PORT=8080
 FIREBASE_PATH_LATEST=/device1/latest
 ```

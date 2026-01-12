@@ -99,66 +99,6 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-# ECG Generator state
-hrv_offset = 0.0
-hrv_counter = 0
-
-
-def generate_ecg_value(t: int) -> float:
-    """Generate realistic ECG waveform value"""
-    global hrv_offset, hrv_counter
-    
-    # Baseline wander
-    base = math.sin(t * 0.05) * 15 + math.sin(t * 0.02) * 8
-    
-    # Heart Rate Variability
-    hrv_counter += 1
-    if hrv_counter > 100:
-        hrv_offset += random.uniform(-2, 2)
-        hrv_offset = max(-8, min(8, hrv_offset))
-        hrv_counter = 0
-    
-    period = 50 + hrv_offset
-    phase = t % period
-    
-    beat = 0
-    noise = random.uniform(-8, 8)
-    
-    # PQRST complex
-    if 5 < phase < 10:
-        beat = 30 * random.uniform(0.8, 1.2)  # P wave
-    elif 18 < phase < 20:
-        beat = -50 * random.uniform(0.9, 1.1)  # Q wave
-    elif 20 <= phase < 24:
-        r_peak = 400 - (abs(phase - 22) * 50)
-        beat = r_peak * random.uniform(0.85, 1.15)  # R wave
-    elif 24 <= phase < 26:
-        beat = -70 * random.uniform(0.9, 1.1)  # S wave
-    elif 35 < phase < 45:
-        t_shape = 50 - abs(phase - 40) * 3
-        beat = max(0, t_shape) * random.uniform(0.85, 1.15)  # T wave
-    
-    return 512 + base + beat + noise
-
-
-def generate_flex_values() -> dict:
-    """Generate flex sensor values"""
-    return {
-        'thumb': random.randint(10, 90),
-        'index': random.randint(10, 90),
-        'middle': random.randint(10, 90),
-        'ring': random.randint(10, 90),
-        'pinky': random.randint(10, 90)
-    }
-
-
-def generate_vitals() -> dict:
-    """Generate vital signs"""
-    return {
-        'bpm': random.randint(60, 80),
-        'spo2': random.randint(97, 100),
-        'temperature': round(random.uniform(36.5, 37.0), 1)
-    }
 
 
 def run_ai_prediction(ecg_buffer: list, sampling_rate: int = 50) -> dict:
@@ -213,7 +153,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 
                 # 2. Flex Data - Send single value from Firebase
                 flex_val = firebase_data.get('flex', 0)
-                if local_time % 5 == 0:  # Update every 500ms
+                if local_time % 25 == 0:  # Update every 500ms (25 * 20ms)
                     await websocket.send_json({
                         'type': 'flex',
                         'value': flex_val,  # Single flex sensor value
@@ -221,7 +161,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     })
                 
                 # 3. Vitals Data (BPM & SpO2)
-                if local_time % 10 == 0:  # Update every 1 second
+                if local_time % 50 == 0:  # Update every 1 second (50 * 20ms)
                     bpm = firebase_data.get('bpm', 0)
                     spo2 = firebase_data.get('spo2', 0)
                     await websocket.send_json({
@@ -232,77 +172,66 @@ async def websocket_endpoint(websocket: WebSocket):
                         'timestamp': current_timestamp
                     })
             else:
-                # Fallback MOCK jika Firebase offline
-                print("[Fallback] Using mock data - Firebase not available", flush=True)
-                ecg_val = generate_ecg_value(local_time)
-                await websocket.send_json({
-                    'type': 'ecg',
-                    'value': ecg_val,
-                    'timestamp': current_timestamp
-                })
-                
-                ecg_buffer.append(ecg_val)
-                if len(ecg_buffer) > 1500: del ecg_buffer[:100]
-                
-                if local_time % 25 == 0:
-                    await websocket.send_json({
-                        'type': 'flex',
-                        'values': generate_flex_values(),
-                        'timestamp': current_timestamp
-                    })
-                
+                # No data from Firebase
                 if local_time % 50 == 0:
-                    await websocket.send_json({
-                        'type': 'vitals',
-                        'data': generate_vitals(),
-                        'timestamp': current_timestamp
-                    })
+                     print("[WebSocket] ⚠️ Waiting for Firebase data...", flush=True)
             
-            # 4. AI Prediction (every 2s = 100 ticks approx, or handle manually)
-            # Jika pakai firebase, kita bisa trigger prediksi tiap sekian iterasi
-            if local_time % 20 == 0 and len(ecg_buffer) > 500: # Approx tiap 2 detik (karena delay 0.1s)
-                if AI_AVAILABLE:
-                    loop = asyncio.get_running_loop()
-                    snapshot = list(ecg_buffer)
-                    
-                    try:
-                        result = await loop.run_in_executor(
-                            ai_executor,
-                            run_ai_prediction,
-                            snapshot,
-                            SAMPLING_RATE
-                        )
+            # 4. AI Prediction (every 2s = 100 ticks approx)
+            if local_time % 100 == 0:
+                if len(ecg_buffer) > 500:
+                    if AI_AVAILABLE:
+                        loop = asyncio.get_running_loop()
+                        snapshot = list(ecg_buffer)
                         
-                        if result and 'error' not in result:
-                            # Kirim hasil (debug)
-                            print("[AI] Prediction result:", result, flush=True)
-                            await websocket.send_json({
-                                'type': 'prediction',
-                                'data': result,
-                                'timestamp': current_timestamp
-                            })
-                    except Exception as e:
-                        print(f"[AI] Error: {e}", flush=True)
+                        try:
+                            result = await loop.run_in_executor(
+                                ai_executor,
+                                run_ai_prediction,
+                                snapshot,
+                                SAMPLING_RATE
+                            )
+                            
+                            if result and 'error' not in result:
+                                print(f"[AI] Prediction: {result.get('prediction_label')}", flush=True)
+                                await websocket.send_json({
+                                    'type': 'prediction',
+                                    'data': result,
+                                    'timestamp': current_timestamp
+                                })
+                        except Exception as e:
+                            print(f"[AI] Error: {e}", flush=True)
+                    else:
+                        # Send status when AI not available
+                        ai_status = {
+                            'prediction_label': 'AI Disabled',
+                            'confidence': 0,
+                            'all_probabilities': {
+                                'A (AFib)': 0, 'N (Normal)': 0, 'O (Other)': 0, '~ (Noisy)': 0
+                            }
+                        }
+                        await websocket.send_json({
+                            'type': 'prediction',
+                            'data': ai_status,
+                            'timestamp': current_timestamp
+                        })
                 else:
-                    # Send mock prediction when AI not available
-                    mock_prediction = {
-                        'prediction_label': 'N (Normal)',
-                        'confidence': 0.85,
+                    # Send buffering status
+                    progress = int((len(ecg_buffer) / 500) * 100)
+                    buffering_data = {
+                        'prediction_label': f'Buffering {progress}%',
+                        'confidence': 0,
                         'all_probabilities': {
-                            'A (AFib)': 0.05,
-                            'N (Normal)': 0.85,
-                            'O (Other)': 0.08,
-                            '~ (Noisy)': 0.02
+                            'A (AFib)': 0, 'N (Normal)': 0, 'O (Other)': 0, '~ (Noisy)': 0
                         }
                     }
                     await websocket.send_json({
                         'type': 'prediction',
-                        'data': mock_prediction,
+                        'data': buffering_data,
                         'timestamp': current_timestamp
                     })
 
             local_time += 1
-            await asyncio.sleep(0.1)  # 100ms interval for Firebase polling
+            await asyncio.sleep(0.02)  # 20ms interval (50Hz)
             
     except WebSocketDisconnect:
         print("[WebSocket] Client disconnected", flush=True)

@@ -376,3 +376,156 @@
   color: #6b7280;
   font-size: var(--text-sm);
 }
+
+/* Toast Notification */
+.toast-notification {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--space-4) var(--space-6);
+  background: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--gray-200);
+  font-weight: 600;
+  z-index: 1000;
+  animation: slideUp 0.3s ease;
+}
+
+.toast-notification.success {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+  border-color: #10b981;
+  color: #059669;
+}
+
+.toast-notification.warning {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+  border-color: #f59e0b;
+  color: #d97706;
+}
+
+.toast-notification.info {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+  border-color: #6366f1;
+  color: #4f46e5;
+}
+
+@keyframes slideUp {
+  from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Modal Content */
+.modal-content {
+  background: white;
+  padding: var(--space-8);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-2xl);
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+  animation: scaleIn 0.3s ease;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.modal-icon {
+  font-size: 64px;
+  margin-bottom: var(--space-4);
+}
+
+.modal-content h3 {
+  font-size: var(--text-2xl);
+  color: #111827;
+  margin-bottom: var(--space-2);
+}
+
+.modal-content p {
+  color: #6b7280;
+  margin-bottom: var(--space-4);
+}
+
+/* Exercise Modal */
+.exercise-modal .loading-bar {
+  height: 8px;
+  background: var(--gray-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin: var(--space-4) 0;
+}
+
+.exercise-modal .loading-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+  border-radius: var(--radius-full);
+  animation: loading 2s ease forwards;
+}
+
+@keyframes loading {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+.exercise-modal .reward-text {
+  color: #10b981;
+  font-weight: 700;
+  font-size: var(--text-lg);
+}
+
+/* Confirm Modal */
+.confirm-modal .modal-actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  margin-top: var(--space-4);
+}
+
+.confirm-modal .btn-cancel,
+.confirm-modal .btn-confirm {
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+}
+
+.confirm-modal .btn-cancel {
+  background: var(--gray-100);
+  color: #374151;
+}
+
+.confirm-modal .btn-cancel:hover {
+  background: var(--gray-200);
+}
+
+.confirm-modal .btn-confirm {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+}
+
+.confirm-modal .btn-confirm:hover {
+  box-shadow: var(--shadow-lg);
+}

@@ -168,7 +168,7 @@ export const LevelsGame = () => {
             Current Level: <span className="highlight">{currentLevel?.id || 1}</span> - {currentLevel?.title || "Level 1"}
           </div>
           <div>
-            <button onClick={resetProgress} className="reset-btn">
+            <button onClick={() => setShowResetConfirm(true)} className="reset-btn">
               Reset Progress
             </button>
           </div>
@@ -245,6 +245,46 @@ export const LevelsGame = () => {
           <p className="progress-text">{totalXP} / 800 XP</p>
         </div>
       </div>
+
+      {/* Toast Notification */}
+      {notification && (
+        <div className={`toast-notification ${notification.type}`}>
+          {notification.type === "success" && "✅ "}
+          {notification.type === "warning" && "⚠️ "}
+          {notification.type === "info" && "ℹ️ "}
+          {notification.message}
+        </div>
+      )}
+
+      {/* Active Exercise Modal */}
+      {activeExercise && (
+        <div className="modal-overlay">
+          <div className="modal-content exercise-modal">
+            <div className="modal-icon">🏃</div>
+            <h3>Latihan Berlangsung...</h3>
+            <p>{activeExercise.title}</p>
+            <div className="loading-bar">
+              <div className="loading-fill"></div>
+            </div>
+            <p className="reward-text">Reward: +{activeExercise.xpReward} XP</p>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Confirmation Modal */}
+      {showResetConfirm && (
+        <div className="modal-overlay">
+          <div className="modal-content confirm-modal">
+            <div className="modal-icon">⚠️</div>
+            <h3>Reset Progress?</h3>
+            <p>Semua XP dan pencapaian akan dihapus. Tindakan ini tidak dapat dibatalkan.</p>
+            <div className="modal-actions">
+              <button onClick={() => setShowResetConfirm(false)} className="btn-cancel">Batal</button>
+              <button onClick={resetProgress} className="btn-confirm">Ya, Reset</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

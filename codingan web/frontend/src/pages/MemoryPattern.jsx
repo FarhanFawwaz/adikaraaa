@@ -66,7 +66,11 @@ export const MemoryPattern = () => {
         window.location.port === "5173" || window.location.port === ""
           ? "8080"
           : window.location.port;
-      const wsUrl = `${wsScheme}://${host}:${port}/api/ws`;
+      const deviceId =
+        (localStorage.getItem("deviceId") || "device1").trim() || "device1";
+      const wsUrl = `${wsScheme}://${host}:${port}/api/ws?device=${encodeURIComponent(
+        deviceId
+      )}`;
       wsRef.current = new WebSocket(wsUrl);
 
       wsRef.current.onopen = () => {
@@ -77,6 +81,19 @@ export const MemoryPattern = () => {
           const data = JSON.parse(event.data);
 
           if (data.type === "flex") {
+            if (data.firebase_connected === false) {
+              const cleared = {
+                thumb: BASE_VALUE,
+                index: BASE_VALUE,
+                middle: BASE_VALUE,
+                ring: BASE_VALUE,
+                pinky: BASE_VALUE,
+              };
+              lastFlexValuesRef.current = cleared;
+              setFlexValues(cleared);
+              return;
+            }
+
             let newVals = { ...lastFlexValuesRef.current };
 
             if (data.values) {

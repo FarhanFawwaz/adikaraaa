@@ -1,9 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
+import { getCurrentUser } from "../services/authService";
 import { Navbar } from "../components/Navbar";
 
 export const LandingPage = () => {
+  const [user, setUser] = useState(null);
   const typingRef = useRef(null);
+
+  useEffect(() => {
+    const currentUser = getCurrentUser();
+    setUser(currentUser);
+  }, []);
 
   // Typing effect
   useEffect(() => {
@@ -285,13 +292,7 @@ export const LandingPage = () => {
                   Mulai Rehabilitasi
                   <span className="btn-glow"></span>
                 </Link>
-                <button
-                  className="btn btn-outline-hero"
-                  onClick={() => scrollToSection("games")}
-                >
-                  <i className="fas fa-play-circle"></i>
-                  Lihat Demo
-                </button>
+                
               </div>
             </div>
 
@@ -531,7 +532,7 @@ export const LandingPage = () => {
                 </div>
                 <div className="tech-item">
                   <i className="fas fa-network-wired"></i>
-                  <span>MQTT over WebSocket</span>
+                  <span>Firebase</span>
                 </div>
                 <div className="tech-item">
                   <i className="fab fa-js"></i>
@@ -539,19 +540,12 @@ export const LandingPage = () => {
                 </div>
                 <div className="tech-item">
                   <i className="fas fa-database"></i>
-                  <span>MIT-BIH Database</span>
+                  <span>MySQL Database</span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="tech-diagram">
-            <img
-              src="/assets/images/system-architecture.svg"
-              alt="System Architecture"
-              className="diagram-image"
-            />
-          </div>
         </div>
       </section>
 
@@ -565,10 +559,17 @@ export const LandingPage = () => {
               rehabilitasi dengan teknologi AI
             </p>
             <div className="cta-actions">
-              <Link to="/register" className="btn btn-hero">
-                <i className="fas fa-rocket"></i>
-                Daftar Sekarang Gratis
-              </Link>
+              {user ? (
+                <Link to="/dashboard" className="btn btn-hero">
+                  <i className="fas fa-rocket"></i>
+                  Mulai Rehabilitasi
+                </Link>
+              ) : (
+                <Link to="/register" className="btn btn-hero">
+                  <i className="fas fa-rocket"></i>
+                  Daftar Sekarang Gratis
+                </Link>
+              )}
               <button
                 className="btn btn-outline-hero"
                 onClick={() => scrollToSection("features")}
@@ -582,74 +583,7 @@ export const LandingPage = () => {
       </section>
 
       {/* Footer */}
-      <footer className="footer">
-        <div className="container">
-          <div className="footer-content">
-            <div className="footer-brand">
-              <div className="logo">
-                <i className="fas fa-hand-sparkles"></i>
-                <span>
-                  NeuroRehab<span className="gradient-text">AI</span>
-                </span>
-              </div>
-              <p className="footer-tagline">
-                Rehabilitasi stroke yang lebih cerdas dengan teknologi IoT dan
-                AI
-              </p>
-              <div className="social-links">
-                <a href="#" aria-label="Instagram">
-                  <i className="fab fa-instagram"></i>
-                </a>
-                <a href="#" aria-label="Twitter">
-                  <i className="fab fa-twitter"></i>
-                </a>
-                <a href="#" aria-label="LinkedIn">
-                  <i className="fab fa-linkedin"></i>
-                </a>
-                <a href="#" aria-label="YouTube">
-                  <i className="fab fa-youtube"></i>
-                </a>
-              </div>
-            </div>
-
-            <div className="footer-links">
-              <div className="footer-column">
-                <h4>Produk</h4>
-                <a href="#features">Fitur</a>
-                <a href="#games">Game Terapi</a>
-                <a href="#technology">Teknologi</a>
-                <Link to="/dashboard">Dashboard Pasien</Link>
-              </div>
-
-              <div className="footer-column">
-                <h4>Perusahaan</h4>
-                <a href="#about">Tentang Kami</a>
-                <a href="#team">Tim</a>
-                <a href="#contact">Kontak</a>
-                <a href="#careers">Karir</a>
-              </div>
-
-              <div className="footer-column">
-                <h4>Dukungan</h4>
-                <a href="#faq">FAQ</a>
-                <a href="#docs">Dokumentasi</a>
-                <a href="#privacy">Kebijakan Privasi</a>
-                <a href="#terms">Syarat &amp; Ketentuan</a>
-              </div>
-            </div>
-          </div>
-
-          <div className="footer-bottom">
-            <p>
-              &copy; 2026 NeuroRehab Glove AI - Pop Mie Dower, Telkom
-              University. All rights reserved.
-            </p>
-            <p className="footer-attribution">
-              <i className="fas fa-trophy"></i> Inovasi SDGs Batch 2026
-            </p>
-          </div>
-        </div>
-      </footer>
+      
     </div>
   );
 };

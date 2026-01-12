@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import "./PatientInfoCard.css";
 
 export const PatientInfoCard = () => {
   const [patientData, setPatientData] = useState(null);
@@ -12,7 +13,6 @@ export const PatientInfoCard = () => {
       try {
         setLoading(true);
 
-        // Check if user is logged in from localStorage (UI only)
         const user = localStorage.getItem("user");
 
         if (!user) {
@@ -21,10 +21,9 @@ export const PatientInfoCard = () => {
           return;
         }
 
-        // Fetch patient data from backend using httpOnly cookie
         const response = await fetch("http://localhost:8080/api/patients/me", {
           method: "GET",
-          credentials: "include", // Important: send cookies
+          credentials: "include", 
           headers: {
             "Content-Type": "application/json",
           },
@@ -50,7 +49,7 @@ export const PatientInfoCard = () => {
             "http://localhost:8080/api/sessions/count",
             {
               method: "GET",
-              credentials: "include", // Important: send cookies
+              credentials: "include", 
               headers: {
                 "Content-Type": "application/json",
               },
@@ -94,7 +93,6 @@ export const PatientInfoCard = () => {
   }
 
   if (error) {
-    // Check if it's an authentication error
     const isAuthError =
       error.includes("login") ||
       error.includes("Sesi") ||
@@ -126,7 +124,6 @@ export const PatientInfoCard = () => {
     );
   }
 
-  // Generate patient ID from user id
   const patientId = patientData?.id
     ? `P-${new Date().getFullYear()}-${String(patientData.id).padStart(3, "0")}`
     : "N/A";
@@ -139,7 +136,7 @@ export const PatientInfoCard = () => {
           Informasi Pasien
         </h3>
       </div>
-      <div className="patient-info">
+      <div className="patient-info-content">
         <div className="patient-left">
           <div className="patient-avatar">
             <i className="fas fa-user-circle"></i>
@@ -150,140 +147,23 @@ export const PatientInfoCard = () => {
         </div>
         <div className="patient-details">
           <div className="patient-detail-item">
-            <span className="detail-label">ID:</span>
+            <span className="detail-label">ID Pasien</span>
             <span className="detail-value">{patientId}</span>
           </div>
           <div className="patient-detail-item">
-            <span className="detail-label">Usia:</span>
+            <span className="detail-label">Usia</span>
             <span className="detail-value">
               {patientData?.patient_profile?.age
                 ? `${patientData.patient_profile.age} Tahun`
                 : "Belum diisi"}
             </span>
           </div>
+          <div className="patient-detail-item">
+            <span className="detail-label">Sesi Latihan</span>
+            <span className="detail-value">{sessionCount} Sesi</span>
+          </div>
         </div>
       </div>
-
-      <style>{`
-        .patient-info-loading,
-        .patient-info-error {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: var(--space-8);
-          gap: var(--space-4);
-          color: var(--gray-400);
-        }
-
-        .spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid rgba(255, 255, 255, 0.1);
-          border-top-color: var(--primary-500);
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-
-        .patient-info-error i {
-          font-size: 32px;
-          color: var(--error-500);
-        }
-
-        .btn-login {
-          margin-top: var(--space-4);
-          padding: var(--space-3) var(--space-6);
-          background: linear-gradient(135deg, var(--primary-500), var(--accent-purple));
-          color: white;
-          border: none;
-          border-radius: var(--radius-lg);
-          font-weight: 600;
-          cursor: pointer;
-          display: inline-flex;
-          align-items: center;
-          gap: var(--space-2);
-          text-decoration: none;
-          transition: all var(--transition-base);
-        }
-
-        .btn-login:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3);
-        }
-
-        .patient-info {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: var(--space-6);
-        }
-
-        .patient-left {
-          text-align: center;
-        }
-
-        .patient-avatar {
-          width: 80px;
-          height: 80px;
-          margin: 0 auto var(--space-4);
-          background: linear-gradient(135deg, var(--primary-500), var(--accent-purple));
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .patient-avatar i {
-          font-size: 40px;
-          color: white;
-        }
-
-        .patient-name {
-          font-size: var(--text-xl);
-          font-weight: 700;
-          color: white;
-        }
-
-        .patient-details {
-          display: flex;
-          flex-direction: column;
-          gap: var(--space-3);
-          flex: 1;
-        }
-
-        .patient-detail-item {
-          display: flex;
-          justify-content: space-between;
-          gap: var(--space-8);
-          padding: var(--space-3);
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: var(--radius-lg);
-        }
-
-        .detail-label {
-          color: var(--gray-400);
-          font-size: var(--text-sm);
-        }
-
-        .detail-value {
-          color: white;
-          font-weight: 600;
-        }
-
-        @media (max-width: 768px) {
-          .patient-info {
-            flex-direction: column;
-          }
-          
-          .patient-details {
-            width: 100%;
-          }
-        }
-      `}</style>
     </div>
   );
 };

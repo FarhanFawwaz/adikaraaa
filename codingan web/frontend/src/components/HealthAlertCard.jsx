@@ -275,6 +275,41 @@ export const HealthAlertCard = ({
             <span>Semua parameter vital dalam kondisi normal</span>
           </div>
         )}
+
+        {/* ECG Reference Standards */}
+        <div className="ecg-reference">
+          <div className="ref-header">
+            <i className="fas fa-info-circle"></i>
+            <span>Standar Nilai Normal ECG (Dewasa)</span>
+          </div>
+          <div className="ref-content">
+            <p className="ref-desc">
+              Normal ECG values vary slightly by age, sex, and individual.
+              Generally for adults:
+            </p>
+            <div className="ref-grid">
+              <div className="ref-item">
+                <span className="ref-label">Heart Rate</span>
+                <span className="ref-value">60-100 bpm</span>
+              </div>
+              <div className="ref-item">
+                <span className="ref-label">PR Interval</span>
+                <span className="ref-value">120-200 ms</span>
+                <span className="ref-sub">Atrial Depolarization (P wave)</span>
+              </div>
+              <div className="ref-item">
+                <span className="ref-label">QRS Duration</span>
+                <span className="ref-value">&lt; 120 ms</span>
+                <span className="ref-sub">Ventricular Depolarization</span>
+              </div>
+              <div className="ref-item">
+                <span className="ref-label">QTc Interval</span>
+                <span className="ref-value">360-440 ms</span>
+                <span className="ref-sub">Repolarization (T wave)</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -191,6 +191,33 @@ export const LandingPage = () => {
     },
   ];
 
+  const rehabPrograms = [
+    {
+      route: "/game/levels",
+      icon: "fa-trophy",
+      tag: "Gamified Progress",
+      title: "Level Achievements",
+      description: "Sistem level berbasis XP untuk memotivasi kemajuan rehabilitasi. Buka level baru dan raih pencapaian.",
+      gradient: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)",
+      metrics: [
+        { icon: "fa-star", label: "XP System" },
+        { icon: "fa-lock-open", label: "Unlockables" }
+      ]
+    },
+    {
+      route: "/game/daily-exercise",
+      icon: "fa-calendar-check",
+      tag: "Rutinitas Harian",
+      title: "Daily Exercises",
+      description: "Program latihan harian terstruktur untuk membangun konsistensi. 4 sesi latihan berbeda setiap hari.",
+      gradient: "linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)",
+      metrics: [
+        { icon: "fa-fire", label: "Streaks" },
+        { icon: "fa-chart-bar", label: "Tracking" }
+      ]
+    }
+  ];
+
   return (
     <div>
       {/* Navigation */}
@@ -323,6 +350,8 @@ export const LandingPage = () => {
         </div>
       </section>
 
+
+
       {/* Features Section */}
       <section className="features" id="features">
         <div className="container">
@@ -358,6 +387,53 @@ export const LandingPage = () => {
                   ))}
                 </ul>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Rehabilitation Section */}
+      <section className="games-section" id="rehabilitation">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-subtitle">Program Terstruktur</span>
+            <h2 className="section-title">
+              Program <span className="gradient-text">Rehabilitasi</span>
+            </h2>
+            <p className="section-description">
+              Tingkatkan pemulihan Anda dengan program latihan yang terarah, terukur, dan menyenangkan.
+            </p>
+          </div>
+
+          <div className="games-showcase">
+            {rehabPrograms.map((program, index) => (
+              <Link
+                to={program.route}
+                className="game-card"
+                key={index}
+                style={{ textDecoration: "none", color: "inherit" }}
+              >
+                <div className="game-image">
+                  <div
+                    className="game-preview"
+                    style={{ background: program.gradient }}
+                  >
+                    <i className={`fas ${program.icon}`}></i>
+                  </div>
+                </div>
+                <div className="game-info">
+                  <div className="game-tag">{program.tag}</div>
+                  <h3 className="game-title">{program.title}</h3>
+                  <p className="game-description">{program.description}</p>
+                  <div className="game-metrics">
+                    {program.metrics.map((metric, i) => (
+                      <span key={i}>
+                        <i className={`fas ${metric.icon}`}></i> {metric.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </Link>
             ))}
           </div>
         </div>

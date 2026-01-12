@@ -1,0 +1,5 @@
+codingan web/backend/venv/
+*.pyc
+__pycache__/
+.env
+.DS_Store

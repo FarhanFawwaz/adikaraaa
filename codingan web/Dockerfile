@@ -40,3 +40,22 @@ COPY frontend/ ./
 
 # Expose Vite dev server port
 EXPOSE 5173
+
+# --- Bridge Server Stage ---
+FROM node:20-alpine AS bridge-server
+
+WORKDIR /app/bridge-server
+
+# Copy package files
+COPY bridge-server/package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy source code
+COPY bridge-server/ ./
+
+# Expose WebSocket port
+EXPOSE 8080
+
+CMD ["npm", "start"]

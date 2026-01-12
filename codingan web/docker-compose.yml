@@ -55,6 +55,24 @@ services:
       mysql:
         condition: service_healthy
 
+  bridge-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: bridge-server
+    working_dir: /app/bridge-server
+    ports:
+      - "8082:8080" # Mapped to 8082 to avoid conflict with backend on 8080
+    environment:
+      - PORT=8080
+      - FIREBASE_DATABASE_URL=https://neurorehab-58cd1-default-rtdb.asia-southeast1.firebasedatabase.app
+      - FIREBASE_PATH_LATEST=/device1/latest
+    volumes:
+      - ./bridge-server:/app/bridge-server
+      # Require user to mount service account if using bridge-server
+      # - ./bridge-server/firebase-service-account.json:/app/bridge-server/firebase-service-account.json
+    restart: unless-stopped
+
   frontend:
     build:
       context: .

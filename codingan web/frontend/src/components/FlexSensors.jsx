@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 
 export const FlexSensors = ({ flexData, isConnected }) => {
   const [fingers, setFingers] = useState({
-    thumb: null,
-    index: null,
-    middle: null,
-    ring: null,
-    pinky: null,
+    thumb: 54,
+    index: 54,
+    middle: 54,
+    ring: 54,
+    pinky: 54,
   });
 
   useEffect(() => {
@@ -17,20 +17,17 @@ export const FlexSensors = ({ flexData, isConnected }) => {
         setFingers(flexData.values);
       } else if (flexData.value !== undefined) {
         // Single flex sensor (from Firebase)
-        // Use smaller max value (200 instead of 4095) for better visibility
-        // Values typically range 0-100, so 200 provides good scaling
-        const maxFlexValue = 200; // Adjusted for better sensitivity
-        const percentage = Math.min(100, Math.round((flexData.value / maxFlexValue) * 100));
+        const rawValue = flexData.value;
 
         // Debug log
-        console.log('[Flex] Raw:', flexData.value, '| %:', percentage + '%', '(max=' + maxFlexValue + ')');
+        console.log('[Flex] Raw:', rawValue);
 
         setFingers({
-          thumb: percentage,
-          index: percentage,
-          middle: percentage,
-          ring: percentage,
-          pinky: percentage,
+          thumb: 54,
+          index: 54,
+          middle: rawValue,
+          ring: 54,
+          pinky: 54,
         });
       }
     }
@@ -120,28 +117,48 @@ export const FlexSensors = ({ flexData, isConnected }) => {
     <div className="bg-card-dark rounded-xl p-5 border border-white/5 h-full">
 
       <div className="flex justify-around gap-4">
-        {fingerNames.map(({ key, label }) => (
-          <div key={key} className="text-center flex-1">
-            <div className="w-full h-64 bg-dark rounded-lg flex items-end overflow-hidden relative">
-              {fingers[key] !== null ? (
+        {fingerNames.map(({ key, label }) => {
+          const value = fingers[key];
+          const centerValue = 54;
+          const diff = value - centerValue;
+          const isPositive = diff >= 0;
+          
+          // Calculate height percentage (relative to half the container)
+          // Assume max deviation is around 50 units (e.g. 54 -> 100 or 54 -> 0)
+          const maxDeviation = 50; 
+          const heightPercentage = Math.min(100, Math.abs(diff) / maxDeviation * 100);
+          
+          return (
+            <div key={key} className="text-center flex-1">
+              <div className="w-full h-64 bg-dark rounded-lg relative overflow-hidden flex flex-col justify-center">
+                {/* Center Line */}
+                <div className="absolute w-full h-0.5 bg-white/20 top-1/2 -translate-y-1/2 z-10" />
+
+                {/* Animated Bar */}
                 <div
-                  className={`w-full transition-all duration-300 rounded-t-lg ${fingers[key] > 80
-                    ? "bg-purple"
-                    : "bg-gradient-to-t from-primary to-blue-400"
-                    }`}
-                  style={{ height: `${fingers[key]}%` }}
+                  className={`absolute w-full transition-all duration-300 left-0 ${
+                    isPositive 
+                      ? "bg-gradient-to-t from-emerald-500 to-emerald-400 bottom-1/2 rounded-t-sm" 
+                      : "bg-gradient-to-b from-rose-500 to-rose-400 top-1/2 rounded-b-sm"
+                  }`}
+                  style={{ 
+                    height: `${heightPercentage / 2}%` // /2 because container is full height, we want % of half
+                  }}
                 />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <span className="text-slate-600 text-2xl">--</span>
+                
+                {/* Value Display */}
+                <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                   <span className={`text-xs font-mono font-bold ${Math.abs(diff) > 5 ? 'text-white drop-shadow-md' : 'text-slate-500'}`}>
+                     {value}
+                   </span>
                 </div>
-              )}
+              </div>
+              <div className="text-slate-400 text-xs mt-2 font-mono">
+                {label}
+              </div>
             </div>
-            <div className="text-slate-400 text-xs mt-2 font-mono">
-              {fingers[key] !== null ? `${fingers[key]}%` : '--'}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       {!isConnected && (
         <div className="text-center text-red-400 text-sm mt-4">

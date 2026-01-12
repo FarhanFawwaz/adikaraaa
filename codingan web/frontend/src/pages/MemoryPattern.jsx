@@ -75,10 +75,9 @@ export const MemoryPattern = () => {
       wsRef.current.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          
+
           if (data.type === "flex") {
             let newVals = { ...lastFlexValuesRef.current };
-            let isSingleSensor = false;
 
             if (data.values) {
               // Multi-finger data
@@ -90,33 +89,15 @@ export const MemoryPattern = () => {
                 pinky: data.values.pinky ?? lastFlexValuesRef.current.pinky,
               };
             } else if (data.value !== undefined) {
-              // Single sensor - Smart Mapping
-              isSingleSensor = true;
-              const rawValue = data.value;
-              
-              // If playing, map this single sensor to the EXPECTED finger
-              // otherwise, just show it on all fingers or a specific one (e.g. thumb) for feedback
-              if (isPlaying) {
-                 // Smart map: Update ALL fingers to this value so visually they move, 
-                 // OR just update the expected one? 
-                 // Better visual: Update the EXPECTED finger to this value so the user sees "success" on the correct finger
-                 // But wait, if they get it wrong? Hard to define "wrong" with 1 sensor if we auto-map to expected.
-                 // Let's map it to the expected finger so it triggers the logic below.
-                 const expectedFinger = pattern[currentIndexRef.current]; // We need a ref for currentIndex to access it inside callback
-                 if (expectedFinger) {
-                    newVals[expectedFinger] = rawValue;
-                 }
-              } else {
-                // default to middle for testing (matches FingerPiano)
-                newVals.middle = rawValue;
-              }
+              // Single sensor - Always map to middle
+              newVals.middle = data.value;
             }
 
             // Detect rising edge per finger based on deviation
             FINGERS.forEach((finger) => {
               const nowVal = newVals[finger];
               const prevVal = lastFlexValuesRef.current[finger];
-              
+
               const nowDeviation = Math.abs(nowVal - BASE_VALUE);
               const prevDeviation = Math.abs(prevVal - BASE_VALUE);
 
@@ -126,7 +107,7 @@ export const MemoryPattern = () => {
                 prevDeviation <= FLEX_DEVIATION_THRESHOLD
               ) {
                 // For single sensor "Smart Mapping", we implicitly trust the timing if they flex
-                // But we still check logic. 
+                // But we still check logic.
                 // If we mapped mapped single sensor to expectedFinger, this will trigger handleFingerPress(expectedFinger)
                 handleFingerPress(finger);
               }
@@ -241,41 +222,43 @@ export const MemoryPattern = () => {
 
             <div className="finger-grid">
               {FINGERS.map((f) => {
-                 const value = flexValues[f];
-                 const deviation = Math.abs(value - BASE_VALUE);
-                 const isActive = deviation > FLEX_DEVIATION_THRESHOLD;
-                 const percentage = Math.min(100, (deviation / 50) * 100);
+                const value = flexValues[f];
+                const deviation = Math.abs(value - BASE_VALUE);
+                const isActive = deviation > FLEX_DEVIATION_THRESHOLD;
+                const percentage = Math.min(100, (deviation / 50) * 100);
 
-                 return (
-                <div
-                  key={f}
-                  className={`finger-tile ${
-                    previewActive === f ? "preview" : ""
-                  } ${
-                    pressFeedback.finger === f && pressFeedback.type === "hit"
-                      ? "hit"
-                      : ""
-                  } ${
-                    pressFeedback.finger === f && pressFeedback.type === "miss"
-                      ? "miss"
-                      : ""
-                  }`}
-                >
-                  <div className="finger-icon">
-                    <i className="fas fa-hand-sparkles"></i>
+                return (
+                  <div
+                    key={f}
+                    className={`finger-tile ${
+                      previewActive === f ? "preview" : ""
+                    } ${
+                      pressFeedback.finger === f && pressFeedback.type === "hit"
+                        ? "hit"
+                        : ""
+                    } ${
+                      pressFeedback.finger === f &&
+                      pressFeedback.type === "miss"
+                        ? "miss"
+                        : ""
+                    }`}
+                  >
+                    <div className="finger-icon">
+                      <i className="fas fa-hand-sparkles"></i>
+                    </div>
+                    <div className="finger-label">{FINGER_LABEL[f]}</div>
+
+                    {/* Visual Bar */}
+                    <div className="sensor-bar-container">
+                      <div
+                        className={`sensor-bar ${isActive ? "active" : ""}`}
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                    <div className="flex-value">{value}</div>
                   </div>
-                  <div className="finger-label">{FINGER_LABEL[f]}</div>
-                  
-                  {/* Visual Bar */}
-                  <div className="sensor-bar-container">
-                    <div 
-                      className={`sensor-bar ${isActive ? 'active' : ''}`}
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                  <div className="flex-value">{value}</div>
-                </div>
-              )})}
+                );
+              })}
             </div>
 
             <div className="results-actions flex gap-5">

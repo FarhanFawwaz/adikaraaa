@@ -1,0 +1,378 @@
+/* ============================================
+   Levels Game Page Styles
+   ============================================ */
+
+.levels-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f0f9ff 0%, #ffffff 100%);
+  padding: var(--space-8) var(--space-4);
+}
+
+/* Icons */
+.levels-page .icon { width: 20px; height: 20px; }
+.levels-page .icon-lg { width: 24px; height: 24px; }
+
+/* Header */
+.levels-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+}
+
+.levels-header h1 {
+  font-size: var(--text-3xl);
+  color: #111827;
+  margin: 0;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  color: #374151;
+  font-weight: 600;
+  transition: all var(--transition-base);
+}
+
+.back-link:hover {
+  background: var(--gray-50);
+  border-color: var(--primary-300);
+  color: var(--primary-600);
+  transform: translateX(-4px);
+}
+
+/* XP Progress Card */
+.xp-card {
+  background: white;
+  padding: var(--space-8);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--gray-100);
+  text-align: center;
+  margin-bottom: var(--space-8);
+}
+
+.xp-card .subtitle {
+  color: #6b7280;
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-2);
+}
+
+.xp-value {
+  font-size: 4rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: var(--space-4);
+  line-height: 1;
+}
+
+.xp-value span {
+  font-size: var(--text-2xl);
+  color: #9ca3af;
+  -webkit-text-fill-color: #9ca3af;
+}
+
+.current-level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-lg);
+  color: #374151;
+  margin-bottom: var(--space-4);
+}
+
+.current-level-badge .highlight {
+  color: #6366f1;
+  font-weight: 700;
+}
+
+.reset-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.reset-btn:hover {
+  color: #dc2626;
+  text-decoration: underline;
+}
+
+/* Levels Grid */
+.levels-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Level Card */
+.level-card {
+  background: white;
+  padding: var(--space-6);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-md);
+  border: 2px solid var(--gray-100);
+  transition: all var(--transition-base);
+}
+
+.level-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+}
+
+.level-card.locked {
+  opacity: 0.6;
+  border-color: var(--gray-200);
+}
+
+.level-card.completed {
+  border-color: #10b981;
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, white 100%);
+}
+
+.level-card.unlocked {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1), var(--shadow-md);
+}
+
+.level-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+@media (min-width: 768px) {
+  .level-card-content {
+    flex-direction: row;
+  }
+}
+
+.level-main {
+  flex: 1;
+}
+
+/* Level Header */
+.level-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.level-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-xl);
+  background: var(--gray-100);
+}
+
+.level-card.completed .level-icon {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+.level-card.unlocked .level-icon {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+}
+
+.level-card.locked .level-icon {
+  background: var(--gray-200);
+  color: #9ca3af;
+}
+
+.level-title {
+  font-size: var(--text-xl);
+  color: #111827;
+  margin-bottom: var(--space-1);
+  font-weight: 700;
+}
+
+.level-card.locked .level-title {
+  color: #9ca3af;
+}
+
+.level-description {
+  color: #6b7280;
+  font-size: var(--text-sm);
+  margin: 0;
+}
+
+/* XP Tags */
+.xp-tags {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.xp-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+}
+
+.xp-tag .label {
+  color: #6b7280;
+  margin-right: var(--space-2);
+}
+
+.xp-tag .value {
+  font-weight: 700;
+  color: #111827;
+}
+
+.xp-tag .value.reward {
+  color: #10b981;
+}
+
+/* Exercises Box */
+.exercises-box {
+  background: var(--gray-50);
+  padding: var(--space-4);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--gray-100);
+}
+
+.exercises-box h4 {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #6b7280;
+  margin-bottom: var(--space-3);
+  font-weight: 700;
+}
+
+.exercises-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .exercises-list {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.exercises-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: #6b7280;
+  font-size: var(--text-sm);
+}
+
+.exercises-list .dot {
+  width: 6px;
+  height: 6px;
+  background: var(--primary-300);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Action Button */
+.level-action {
+  display: flex;
+  align-items: center;
+}
+
+.level-btn {
+  width: 100%;
+  padding: var(--space-4);
+  border: none;
+  border-radius: var(--radius-xl);
+  font-size: var(--text-base);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+@media (min-width: 768px) {
+  .level-btn {
+    width: 140px;
+  }
+}
+
+.level-btn.locked {
+  background: var(--gray-200);
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.level-btn.active {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+}
+
+.level-btn.active:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.level-btn.completed {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+}
+
+/* Master Progress */
+.master-progress {
+  margin-top: var(--space-8);
+  background: white;
+  padding: var(--space-6);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--gray-100);
+}
+
+.master-progress h3 {
+  font-size: var(--text-lg);
+  color: #111827;
+  margin-bottom: var(--space-4);
+  font-weight: 700;
+}
+
+.progress-track {
+  height: 16px;
+  background: var(--gray-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: var(--space-2);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 100%);
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease;
+}
+
+.progress-text {
+  text-align: right;
+  color: #6b7280;
+  font-size: var(--text-sm);
+}

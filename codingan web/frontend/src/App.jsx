@@ -23,15 +23,12 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/games" element={<GamesHub />} />
-          <Route
-            path="/game/daily-exercise"
-            element={<DailyExerciseDetail />}
-          />
+          <Route path="/game/daily-exercise" element={<DailyExerciseDetail />} />
+          <Route path="/game/levels" element={<LevelsGame />} />
         </Route>
 
         {/* Game Routes without Layout (Full screen games) */}
         <Route path="/game/bird" element={<BirdGame />} />
-        <Route path="/game/levels" element={<LevelsGame />} />
         <Route path="/game/piano" element={<FingerPiano />} />
         <Route path="/game/memory" element={<MemoryPattern />} />
         <Route path="/game/fruit" element={<FruitCatch />} />

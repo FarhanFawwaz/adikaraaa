@@ -12,6 +12,7 @@
   border-radius: 12px;
   padding: 14px;
   text-align: center;
+  transition: all 0.2s ease;
 }
 
 .finger-tile .finger-icon {
@@ -30,14 +31,37 @@
 }
 
 .finger-tile .flex-value {
-  font-size: 12px;
-  opacity: 0.9;
+  font-size: 11px;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+/* Sensor Bar */
+.sensor-bar-container {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 6px 0;
+}
+
+.sensor-bar {
+  height: 100%;
+  background: #6366f1;
+  border-radius: 10px;
+  transition: width 0.1s ease-out;
+}
+
+.sensor-bar.active {
+  background: #10b981;
 }
 
 /* Preview highlight */
 .finger-tile.preview {
   border-color: rgba(99, 102, 241, 0.5);
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
+  background: rgba(99, 102, 241, 0.1);
 }
 
 /* Next expected step */

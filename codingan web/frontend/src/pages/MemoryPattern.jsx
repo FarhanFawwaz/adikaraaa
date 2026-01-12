@@ -6,26 +6,31 @@ import { Navbar } from "../components/Navbar";
 export const MemoryPattern = () => {
   const wsRef = useRef(null);
   const lastFlexValuesRef = useRef({
-    thumb: 0,
-    index: 0,
-    middle: 0,
-    ring: 0,
-    pinky: 0,
+    thumb: 54,
+    index: 54,
+    middle: 54,
+    ring: 54,
+    pinky: 54,
   });
 
   const [wsConnected, setWsConnected] = useState(false);
   const [flexValues, setFlexValues] = useState({
-    thumb: 0,
-    index: 0,
-    middle: 0,
-    ring: 0,
-    pinky: 0,
+    thumb: 54,
+    index: 54,
+    middle: 54,
+    ring: 54,
+    pinky: 54,
   });
 
   const [isPreview, setIsPreview] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [pattern, setPattern] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const currentIndexRef = useRef(0);
+
+  useEffect(() => {
+    currentIndexRef.current = currentIndex;
+  }, [currentIndex]);
   const [previewActive, setPreviewActive] = useState(null); // current finger during preview
   const [statusMsg, setStatusMsg] = useState("Tekan Mulai untuk melihat pola");
   const [score, setScore] = useState(0);
@@ -34,7 +39,8 @@ export const MemoryPattern = () => {
     type: null,
   });
 
-  const FLEX_THRESHOLD = 500;
+  const BASE_VALUE = 54;
+  const FLEX_DEVIATION_THRESHOLD = 10;
   const FINGERS = ["thumb", "index", "middle", "ring", "pinky"];
   const FINGER_LABEL = {
     thumb: "Jempol",
@@ -69,24 +75,59 @@ export const MemoryPattern = () => {
       wsRef.current.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          if (data.type === "flex" && data.values) {
-            const newVals = {
-              thumb: data.values.thumb ?? lastFlexValuesRef.current.thumb,
-              index: data.values.index ?? lastFlexValuesRef.current.index,
-              middle: data.values.middle ?? lastFlexValuesRef.current.middle,
-              ring: data.values.ring ?? lastFlexValuesRef.current.ring,
-              pinky: data.values.pinky ?? lastFlexValuesRef.current.pinky,
-            };
+          
+          if (data.type === "flex") {
+            let newVals = { ...lastFlexValuesRef.current };
+            let isSingleSensor = false;
 
-            // Detect rising edge per finger to treat as a press
+            if (data.values) {
+              // Multi-finger data
+              newVals = {
+                thumb: data.values.thumb ?? lastFlexValuesRef.current.thumb,
+                index: data.values.index ?? lastFlexValuesRef.current.index,
+                middle: data.values.middle ?? lastFlexValuesRef.current.middle,
+                ring: data.values.ring ?? lastFlexValuesRef.current.ring,
+                pinky: data.values.pinky ?? lastFlexValuesRef.current.pinky,
+              };
+            } else if (data.value !== undefined) {
+              // Single sensor - Smart Mapping
+              isSingleSensor = true;
+              const rawValue = data.value;
+              
+              // If playing, map this single sensor to the EXPECTED finger
+              // otherwise, just show it on all fingers or a specific one (e.g. thumb) for feedback
+              if (isPlaying) {
+                 // Smart map: Update ALL fingers to this value so visually they move, 
+                 // OR just update the expected one? 
+                 // Better visual: Update the EXPECTED finger to this value so the user sees "success" on the correct finger
+                 // But wait, if they get it wrong? Hard to define "wrong" with 1 sensor if we auto-map to expected.
+                 // Let's map it to the expected finger so it triggers the logic below.
+                 const expectedFinger = pattern[currentIndexRef.current]; // We need a ref for currentIndex to access it inside callback
+                 if (expectedFinger) {
+                    newVals[expectedFinger] = rawValue;
+                 }
+              } else {
+                // default to middle for testing (matches FingerPiano)
+                newVals.middle = rawValue;
+              }
+            }
+
+            // Detect rising edge per finger based on deviation
             FINGERS.forEach((finger) => {
               const nowVal = newVals[finger];
               const prevVal = lastFlexValuesRef.current[finger];
+              
+              const nowDeviation = Math.abs(nowVal - BASE_VALUE);
+              const prevDeviation = Math.abs(prevVal - BASE_VALUE);
+
               if (
                 isPlaying &&
-                nowVal > FLEX_THRESHOLD &&
-                prevVal <= FLEX_THRESHOLD
+                nowDeviation > FLEX_DEVIATION_THRESHOLD &&
+                prevDeviation <= FLEX_DEVIATION_THRESHOLD
               ) {
+                // For single sensor "Smart Mapping", we implicitly trust the timing if they flex
+                // But we still check logic. 
+                // If we mapped mapped single sensor to expectedFinger, this will trigger handleFingerPress(expectedFinger)
                 handleFingerPress(finger);
               }
             });
@@ -199,7 +240,13 @@ export const MemoryPattern = () => {
             </p>
 
             <div className="finger-grid">
-              {FINGERS.map((f) => (
+              {FINGERS.map((f) => {
+                 const value = flexValues[f];
+                 const deviation = Math.abs(value - BASE_VALUE);
+                 const isActive = deviation > FLEX_DEVIATION_THRESHOLD;
+                 const percentage = Math.min(100, (deviation / 50) * 100);
+
+                 return (
                 <div
                   key={f}
                   className={`finger-tile ${
@@ -218,9 +265,17 @@ export const MemoryPattern = () => {
                     <i className="fas fa-hand-sparkles"></i>
                   </div>
                   <div className="finger-label">{FINGER_LABEL[f]}</div>
-                  <div className="flex-value">{flexValues[f]}</div>
+                  
+                  {/* Visual Bar */}
+                  <div className="sensor-bar-container">
+                    <div 
+                      className={`sensor-bar ${isActive ? 'active' : ''}`}
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                  <div className="flex-value">{value}</div>
                 </div>
-              ))}
+              )})}
             </div>
 
             <div className="results-actions flex gap-5">

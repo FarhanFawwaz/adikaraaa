@@ -121,16 +121,45 @@ export const FingerPiano = () => {
                 pinky: data.values.pinky ?? lastFlexValuesRef.current.pinky,
               };
             } else if (data.value !== undefined) {
-              // Single flex sensor from Firebase - apply to middle finger
+              // Single flex sensor "Smart Mapping"
               const rawValue = data.value;
-              console.log('[FingerPiano] Flex raw value:', rawValue);
-              newFlexValues = {
-                thumb: 54,
-                index: 54,
-                middle: rawValue,
-                ring: 54,
-                pinky: 54,
-              };
+              
+              // Smart mapping: If this single sensor flexes, assuming it maps to the 
+              // note that is currently in the "hit zone".
+              // We need to find if there is a note reachable
+              let targetNote = null;
+              
+              // Check current valid hit window
+              const currentNoteName = sequenceRef.current[currentNoteRef.current % 5];
+              const distance = Math.abs(noteYRef.current - targetYRef.current);
+              
+              if (isPlayingRef.current && distance < 80) {
+                 // We are in hit zone, map to the correct finger for this note
+                 // targetNote = currentNoteName; 
+                 // Find which finger is responsible for this note
+                 // FINGER_TO_NOTE reverse mapping needed? 
+                 // FINGER_TO_NOTE = { thumb: C, index: D, ... }
+                 // so C -> thumb
+                 const NOTE_TO_FINGER = {
+                    "C": "thumb", "D": "index", "E": "middle", "F": "ring", "G": "pinky"
+                 };
+                 const targetFinger = NOTE_TO_FINGER[currentNoteName];
+                 
+                 newFlexValues = {
+                    thumb: 54, index: 54, middle: 54, ring: 54, pinky: 54,
+                    [targetFinger]: rawValue // Assign raw value to the CORRECT finger
+                 };
+              } else {
+                 // Not in hit zone or not playing
+                 // Map to Middle (E) as default visual feedback
+                 newFlexValues = {
+                    thumb: 54,
+                    index: 54,
+                    middle: rawValue,
+                    ring: 54,
+                    pinky: 54,
+                 };
+              }
             }
 
             // Detect finger bending (trigger note when deviation from baseline)

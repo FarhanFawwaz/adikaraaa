@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useMemo, useState } from "react";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { ECGChart } from "../components/ECGChart";
 import { VitalsCard } from "../components/VitalsCard";
@@ -10,6 +11,16 @@ import { PatientInfoCard } from "../components/PatientInfoCard";
 import "../css/Dashboard.css";
 
 export const Dashboard = () => {
+  const [deviceId, setDeviceId] = useState(() => {
+    const stored = localStorage.getItem("deviceId");
+    return stored && stored.trim() ? stored.trim() : "device1";
+  });
+
+  const normalizedDeviceId = useMemo(() => {
+    const v = (deviceId || "").trim();
+    return v ? v : "device1";
+  }, [deviceId]);
+
   const {
     isConnected,
     isFirebaseConnected,
@@ -17,7 +28,7 @@ export const Dashboard = () => {
     flexData,
     vitalsData,
     predictionData,
-  } = useWebSocket();
+  } = useWebSocket({ deviceId: normalizedDeviceId });
 
   return (
     <div className="dashboard-page">
@@ -30,7 +41,10 @@ export const Dashboard = () => {
           {/* Dashboard Grid */}
           <div className="dashboard-grid">
             {/* Patient Info Card - Row 1, Col 1-2 */}
-            <PatientInfoCard />
+            <PatientInfoCard
+              deviceId={normalizedDeviceId}
+              onDeviceIdChange={setDeviceId}
+            />
 
             {/* ECG - Row 1, Col 3-6 */}
             <div className="card dashboard-card ecg-card">
@@ -46,7 +60,9 @@ export const Dashboard = () => {
                       : "disconnected"
                   }`}
                 >
-                  <span className={`status-dot ${isConnected ? "pulse" : ""}`}></span>
+                  <span
+                    className={`status-dot ${isConnected ? "pulse" : ""}`}
+                  ></span>
                   {isConnected && isFirebaseConnected ? "Live" : "Disconnected"}
                 </div>
               </div>
@@ -87,8 +103,6 @@ export const Dashboard = () => {
               <AIPredictionCard predictionData={predictionData} />
             </div>
 
-            
-            
             {/* Health Alert Card - Row 3, Col 1-6 */}
             <div className="health-alert-wrapper">
               <HealthAlertCard

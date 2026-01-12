@@ -2,11 +2,26 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "./PatientInfoCard.css";
 
-export const PatientInfoCard = () => {
+export const PatientInfoCard = ({ deviceId, onDeviceIdChange }) => {
   const [patientData, setPatientData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sessionCount, setSessionCount] = useState(0);
+  const [deviceDraft, setDeviceDraft] = useState(() => {
+    const v = (
+      deviceId ||
+      localStorage.getItem("deviceId") ||
+      "device1"
+    ).trim();
+    return v || "device1";
+  });
+  const [deviceSavedMsg, setDeviceSavedMsg] = useState("");
+
+  useEffect(() => {
+    const v = (deviceId || "").trim();
+    if (v && v !== deviceDraft) setDeviceDraft(v);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deviceId]);
 
   useEffect(() => {
     const fetchPatientData = async () => {
@@ -23,7 +38,7 @@ export const PatientInfoCard = () => {
 
         const response = await fetch("http://localhost:8080/api/patients/me", {
           method: "GET",
-          credentials: "include", 
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -49,7 +64,7 @@ export const PatientInfoCard = () => {
             "http://localhost:8080/api/sessions/count",
             {
               method: "GET",
-              credentials: "include", 
+              credentials: "include",
               headers: {
                 "Content-Type": "application/json",
               },
@@ -137,14 +152,7 @@ export const PatientInfoCard = () => {
         </h3>
       </div>
       <div className="patient-info-content">
-        <div className="patient-left">
-          <div className="patient-avatar">
-            <i className="fas fa-user-circle"></i>
-          </div>
-          <h2 className="patient-name">
-            {patientData?.name || "Nama Tidak Tersedia"}
-          </h2>
-        </div>
+        
         <div className="patient-details">
           <div className="patient-detail-item">
             <span className="detail-label">ID Pasien</span>
@@ -158,7 +166,45 @@ export const PatientInfoCard = () => {
                 : "Belum diisi"}
             </span>
           </div>
-          
+
+          <div className="patient-detail-item patient-detail-item-device">
+            <span className="detail-label">Device</span>
+            <div className="device-input-row">
+              <input
+                className="device-input"
+                type="text"
+                inputMode="text"
+                autoComplete="off"
+                spellCheck={false}
+                placeholder="device1"
+                value={deviceDraft}
+                onChange={(e) => {
+                  setDeviceSavedMsg("");
+                  setDeviceDraft(e.target.value);
+                }}
+              />
+              <button
+                type="button"
+                className="device-save-btn"
+                onClick={() => {
+                  const next = (deviceDraft || "").trim() || "device1";
+                  localStorage.setItem("deviceId", next);
+                  if (typeof onDeviceIdChange === "function") {
+                    onDeviceIdChange(next);
+                  }
+                  setDeviceSavedMsg(`Menggunakan: ${next}`);
+                }}
+              >
+                Simpan
+              </button>
+            </div>
+          </div>
+
+          {deviceSavedMsg && (
+            <div className="device-saved-msg" aria-live="polite">
+              {deviceSavedMsg}
+            </div>
+          )}
         </div>
       </div>
     </div>

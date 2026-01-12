@@ -18,8 +18,8 @@ export const ECGChart = ({ ecgData, isConnected }) => {
     const amplified = baseline + deviation * amplification;
 
     // Map to canvas height with some margin
-    const minValue = -14 * baseline;
-    const maxValue = 14 * baseline;
+    const minValue = -18 * baseline;
+    const maxValue = 18 * baseline;
     const clampedValue = Math.max(minValue, Math.min(maxValue, amplified));
 
     // Invert for canvas (0 at top)

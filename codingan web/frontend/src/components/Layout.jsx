@@ -18,7 +18,7 @@ export const Layout = () => {
             <div className="footer-content grid grid-cols-1 lg:grid-cols-4 gap-12 mb-12">
               <div className="footer-brand col-span-1 lg:col-span-1">
                 <div className="logo flex items-center gap-2 text-xl font-bold mb-4">
-                  <i className="fas fa-hand-sparkles text-primary-400"></i>
+                  
                   <span>
                     NeuroRehab<span className="text-primary-400">AI</span>
                   </span>

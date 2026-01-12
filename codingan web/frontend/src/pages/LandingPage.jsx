@@ -125,8 +125,8 @@ export const LandingPage = () => {
       icon: "fa-brain",
       title: "AI Aritmia Detection",
       description:
-        "Algoritma Deep Learning (FCNN) mendeteksi 5 jenis aritmia dengan akurasi 98% berdasarkan MIT-BIH database.",
-      list: ["98% accuracy", "5 jenis denyut", "Early warning"],
+        "Model ResNet mendeteksi 5 jenis aritmia dengan akurasi 83% berdasarkan PhysioNet 2017 dataset.",
+      list: ["83% accuracy", "Lead 1", "Early warning"],
     },
     {
       icon: "fa-chart-line",
@@ -266,16 +266,16 @@ export const LandingPage = () => {
                 <div className="stat-item">
                   <div className="stat-value">
                     <i className="fas fa-heartbeat"></i>
-                    <Counter target={98} suffix="%" />
+                    AI
                   </div>
-                  <div className="stat-label">Akurasi Deteksi</div>
+                  <div className="stat-label">Deteksi Aritmia</div>
                 </div>
                 <div className="stat-item">
                   <div className="stat-value">
                     <i className="fas fa-gamepad"></i>
-                    <Counter target={4} suffix="+" />
+                    <Counter target={3} suffix="+" />
                   </div>
-                  <div className="stat-label">Game Terapi</div>
+                  <div className="stat-label">Game Terapi Stroke</div>
                 </div>
                 <div className="stat-item">
                   <div className="stat-value">

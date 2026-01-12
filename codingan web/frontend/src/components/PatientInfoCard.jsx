@@ -158,10 +158,7 @@ export const PatientInfoCard = () => {
                 : "Belum diisi"}
             </span>
           </div>
-          <div className="patient-detail-item">
-            <span className="detail-label">Sesi Latihan</span>
-            <span className="detail-value">{sessionCount} Sesi</span>
-          </div>
+          
         </div>
       </div>
     </div>

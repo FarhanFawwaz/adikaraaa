@@ -34,20 +34,18 @@ FIREBASE_DB_SECRET = os.getenv("FIREBASE_DB_SECRET", "YPtFmyP2WHqRb5YOdKgZuEk95j
 async def fetch_firebase_data(path: str = ""):
     """Fetch data from Firebase Realtime Database.
 
-    Args:
-        path: Firebase path without leading slash. Example: "device1/latest/sample_100ms".
+    Note: This helper is intentionally simple and creates its own session.
+    For realtime usage (e.g. WebSocket loop), prefer reusing a shared
+    `aiohttp.ClientSession` to avoid connection churn.
     """
 
     clean_path = (path or "").lstrip("/")
     url = f"{FIREBASE_DATABASE_URL}/{clean_path}.json" if clean_path else f"{FIREBASE_DATABASE_URL}/.json"
-
-    params = {}
-    if FIREBASE_DB_SECRET:
-        params["auth"] = FIREBASE_DB_SECRET
+    params = {"auth": FIREBASE_DB_SECRET} if FIREBASE_DB_SECRET else None
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as response:
+            async with session.get(url, params=params, timeout=aiohttp.ClientTimeout(total=5)) as response:
                 if response.status != 200:
                     return None
                 return await response.json()
@@ -135,21 +133,44 @@ async def websocket_endpoint(websocket: WebSocket):
     device_id = (raw_device_id or "device1").strip() or "device1"
     device_id = re.sub(r"[^a-zA-Z0-9_.-]", "", device_id) or "device1"
 
+    raw_debug = websocket.query_params.get("debug") if websocket.query_params else None
+    debug_enabled = str(raw_debug or "").strip().lower() in {"1", "true", "yes", "y", "on"}
+
     local_time = 0
     ecg_buffer: list[int] = []
     SAMPLING_RATE = 50  # Hz (tick interval 20ms)
 
     last_sample_data = None
+    last_sample_fetch_ts: float | None = None
     firebase_path_used = f"/{device_id}/latest/sample_100ms"
     is_firebase_connected = False
 
+    session: aiohttp.ClientSession | None = None
     try:
+        # Reuse one HTTP session for stable, low-latency polling
+        session = aiohttp.ClientSession()
+
+        async def fetch_path(path: str):
+            clean_path = (path or "").lstrip("/")
+            if not clean_path:
+                return None
+            url = f"{FIREBASE_DATABASE_URL}/{clean_path}.json"
+            params = {"auth": FIREBASE_DB_SECRET} if FIREBASE_DB_SECRET else None
+            try:
+                async with session.get(url, params=params, timeout=aiohttp.ClientTimeout(total=2)) as response:
+                    if response.status != 200:
+                        return None
+                    return await response.json()
+            except Exception:
+                return None
+
         await websocket.send_json(
             {
                 "type": "info",
                 "message": "Connected to NeuroRehab WebSocket",
                 "ai_enabled": AI_AVAILABLE,
                 "device": device_id,
+                "debug": debug_enabled,
             }
         )
 
@@ -164,16 +185,13 @@ async def websocket_endpoint(websocket: WebSocket):
             # Fetch /sample_100ms every 100ms (5 ticks), reuse last value between ticks.
             if local_time % 5 == 0:
                 firebase_path_used = f"/{device_id}/latest/sample_100ms"
-                sample_data = await fetch_firebase_data(f"{device_id}/latest/sample_100ms")
+                sample_data = await fetch_path(f"{device_id}/latest/sample_100ms")
                 if isinstance(sample_data, dict) and sample_data:
                     last_sample_data = sample_data
                     is_firebase_connected = True
+                    last_sample_fetch_ts = current_timestamp
                 else:
-                    # Don't immediately clear data just because one fetch failed (flickering),
-                    # but maybe mark status. For now, we clear to be strict per user request intent?
-                    # Actually keeping last known value is smoother, but let's follow existing pattern:
-                    # if fetch fails, data is likely missing/network down.
-                    last_sample_data = None
+                    # Keep last known value to preserve realtime stream even on transient hiccups.
                     is_firebase_connected = False
 
                 # Send error periodically when device/path not found (every 5s)
@@ -191,15 +209,39 @@ async def websocket_endpoint(websocket: WebSocket):
 
             ecg_val = 512
             flex_value = None
+            ts_ms_val = 0
             if isinstance(last_sample_data, dict) and last_sample_data:
                 ecg_val = last_sample_data.get("ecg", 512)
                 flex_value = last_sample_data.get("flex", None)
+                ts_ms_val = last_sample_data.get("ts_ms", 0)
+
+            if debug_enabled and local_time % 50 == 0:
+                fetch_age_ms = None
+                if last_sample_fetch_ts is not None:
+                    fetch_age_ms = int((current_timestamp - last_sample_fetch_ts) * 1000)
+                debug_payload = {
+                    "type": "debug",
+                    "ecg": ecg_val,
+                    "flex": flex_value,
+                    "ts_ms": ts_ms_val,
+                    "firebase_connected": is_firebase_connected,
+                    "firebase_path": firebase_path_used,
+                    "sample_fetch_age_ms": fetch_age_ms,
+                    "timestamp": current_timestamp,
+                    "device": device_id,
+                }
+                try:
+                    await websocket.send_json(debug_payload)
+                except Exception:
+                    pass
+                print(f"[WebSocket][debug] {debug_payload}", flush=True)
 
             # 1) ECG (every tick)
             await websocket.send_json(
                 {
                     "type": "ecg",
                     "value": ecg_val,
+                    "ts_ms": ts_ms_val,
                     "timestamp": current_timestamp,
                     "firebase_connected": is_firebase_connected,
                     "device": device_id,
@@ -211,8 +253,8 @@ async def websocket_endpoint(websocket: WebSocket):
             if len(ecg_buffer) > 1500:
                 del ecg_buffer[:100]
 
-            # 2) Flex (every 1s)
-            if local_time % 50 == 0:
+            # 2) Flex (every 100ms = 10Hz, aligned with sample_100ms)
+            if local_time % 5 == 0:
                 flex_packet = {
                     "thumb": None,
                     "index": None,
@@ -224,6 +266,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     {
                         "type": "flex",
                         "values": flex_packet,
+                        "ts_ms": ts_ms_val,
                         "timestamp": current_timestamp,
                         "firebase_connected": is_firebase_connected,
                         "device": device_id,
@@ -235,7 +278,7 @@ async def websocket_endpoint(websocket: WebSocket):
             if local_time % 250 == 0:
                 bpm = 0
                 spo2 = 0
-                latest_root = await fetch_firebase_data(f"{device_id}/latest")
+                latest_root = await fetch_path(f"{device_id}/latest")
                 if isinstance(latest_root, dict) and latest_root:
                     bpm = latest_root.get("bpm", 0)
                     spo2 = latest_root.get("spo2", 0)
@@ -324,3 +367,9 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception as e:
         print(f"[WebSocket] Error: {e}", flush=True)
         manager.disconnect(websocket)
+    finally:
+        if session is not None:
+            try:
+                await session.close()
+            except Exception:
+                pass

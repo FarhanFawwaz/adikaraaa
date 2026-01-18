@@ -1,8 +1,11 @@
 """WebSocket Handler for Real-time Data (ECG/Flex/Vitals + AI)
 
-Firebase structure (observed):
-- /<device>/latest/sample_100ms -> { ecg, flex, ts_ms }  (High frequency)
-- /<device>/latest             -> { bpm, spo2, ... }      (Low frequency)
+Firebase structure (observed from your DB):
+- /<device>/latest/sample_100ms -> { ecg, flex, ts_ms }
+- /<device>/latest             -> { bpm, spo2, ecg, flex, sample_100ms: {...}, ... }
+
+Requirement from user:
+- ECG & flex MUST be sourced from /<device>/latest/sample_100ms
 """
 
 from __future__ import annotations
@@ -30,19 +33,19 @@ FIREBASE_DB_SECRET = os.getenv("FIREBASE_DB_SECRET", "YPtFmyP2WHqRb5YOdKgZuEk95j
 
 async def fetch_firebase_data(path: str = ""):
     """Fetch data from Firebase Realtime Database.
-    Args:
-        path: Firebase path without leading slash.
+
+    Note: This helper is intentionally simple and creates its own session.
+    For realtime usage (e.g. WebSocket loop), prefer reusing a shared
+    `aiohttp.ClientSession` to avoid connection churn.
     """
+
     clean_path = (path or "").lstrip("/")
     url = f"{FIREBASE_DATABASE_URL}/{clean_path}.json" if clean_path else f"{FIREBASE_DATABASE_URL}/.json"
-
-    params = {}
-    if FIREBASE_DB_SECRET:
-        params["auth"] = FIREBASE_DB_SECRET
+    params = {"auth": FIREBASE_DB_SECRET} if FIREBASE_DB_SECRET else None
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params, timeout=2.0) as response:
+            async with session.get(url, params=params, timeout=aiohttp.ClientTimeout(total=5)) as response:
                 if response.status != 200:
                     return None
                 return await response.json()
@@ -77,6 +80,8 @@ except Exception as e:
 
 
 class ConnectionManager:
+    """WebSocket connection manager"""
+    
     def __init__(self):
         self.active_connections: list[WebSocket] = []
     
@@ -89,178 +94,282 @@ class ConnectionManager:
             self.active_connections.remove(websocket)
     
     async def send_json(self, websocket: WebSocket, data: dict):
+        # Helper to safely send, suppressing small errors if client already gone
         try:
              await websocket.send_json(data)
         except Exception:
              pass
+    
+    async def broadcast(self, data: dict):
+        for connection in self.active_connections:
+            try:
+                await connection.send_json(data)
+            except Exception:
+                pass
 
 
 manager = ConnectionManager()
 
 
 def run_ai_prediction(ecg_buffer: list, sampling_rate: int = 50) -> dict:
+    """Run AI prediction synchronously (for executor)"""
     if AI_AVAILABLE and predictor:
         try:
-            return predictor.predict(ecg_buffer, fs=sampling_rate)
-        except Exception:
+            result = predictor.predict(ecg_buffer, fs=sampling_rate)
+            return result
+        except Exception as e:
+            print(f"[AI] Prediction error: {e}", flush=True)
             return None
     return None
 
 
 @router.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    """WebSocket endpoint for real-time data streaming with AI."""
+
     await manager.connect(websocket)
 
     raw_device_id = websocket.query_params.get("device") if websocket.query_params else None
     device_id = (raw_device_id or "device1").strip() or "device1"
     device_id = re.sub(r"[^a-zA-Z0-9_.-]", "", device_id) or "device1"
 
-    print(f"[WebSocket] Client connected, Device={device_id}, AI={AI_AVAILABLE}", flush=True)
+    raw_debug = websocket.query_params.get("debug") if websocket.query_params else None
+    debug_enabled = str(raw_debug or "").strip().lower() in {"1", "true", "yes", "y", "on"}
 
-    await websocket.send_json({
-        "type": "info",
-        "message": "Connected to NeuroRehab WebSocket",
-        "ai_enabled": AI_AVAILABLE,
-        "device": device_id,
-    })
-
-    # Loop state
     local_time = 0
-    SAMPLING_RATE = 50  # 50Hz -> 20ms sleep
     ecg_buffer: list[int] = []
-    
-    # State holders
-    last_ecg = 512
-    last_flex = 0
-    last_bpm = 0
-    last_spo2 = 0
-    
-    # Connection tracking
+    SAMPLING_RATE = 50  # Hz (tick interval 20ms)
+
+    last_sample_data = None
+    last_sample_fetch_ts: float | None = None
+    firebase_path_used = f"/{device_id}/latest/sample_100ms"
     is_firebase_connected = False
-    consecutive_errors = 0
-    MAX_ERRORS_BEFORE_DISCONNECT = 50  # ~1 second of failures
 
+    session: aiohttp.ClientSession | None = None
     try:
-        while True:
-            loop_start = time.time()
-            
-            # 1. Fetch High-Frequency Data (ECG + Flex) from sample_100ms
-            # Run every tick (50Hz) or slightly throttled if needed. 
-            # Firebase typical latency is >100ms, so fetching 50Hz is optimistic.
-            # Lets fetch every 5 ticks (10Hz = 100ms) to match sample_100ms name.
-            
-            if local_time % 5 == 0:
-                sample_data = await fetch_firebase_data(f"{device_id}/latest/sample_100ms")
-                if isinstance(sample_data, dict):
-                    is_firebase_connected = True
-                    consecutive_errors = 0
-                    
-                    # Update values (persist if key missing in specific sample)
-                    if "ecg" in sample_data:
-                        last_ecg = int(sample_data["ecg"])
-                    if "flex" in sample_data:
-                        last_flex = int(sample_data["flex"])
-                else:
-                    consecutive_errors += 1
-                    if consecutive_errors > MAX_ERRORS_BEFORE_DISCONNECT:
-                        is_firebase_connected = False
-            
-            # 2. Fetch Low-Frequency Data (Vitals) from latest
-            # Every 1 second (50 ticks)
-            if local_time % 50 == 0:
-                latest_data = await fetch_firebase_data(f"{device_id}/latest")
-                if isinstance(latest_data, dict):
-                    if "bpm" in latest_data:
-                        last_bpm = int(latest_data["bpm"])
-                    if "spo2" in latest_data:
-                        last_spo2 = int(latest_data["spo2"])
+        # Reuse one HTTP session for stable, low-latency polling
+        session = aiohttp.ClientSession()
 
-            # --- SEND DATA TO CLIENT ---
-            
-            # A. ECG Packet (Streaming 50Hz)
-            # We send last_ecg every tick to maintain chart flow, even if it is same value for 5 ticks.
-            await websocket.send_json({
-                "type": "ecg",
-                "value": last_ecg,
-                "timestamp": loop_start,
-                "firebase_connected": is_firebase_connected,
+        async def fetch_path(path: str):
+            clean_path = (path or "").lstrip("/")
+            if not clean_path:
+                return None
+            url = f"{FIREBASE_DATABASE_URL}/{clean_path}.json"
+            params = {"auth": FIREBASE_DB_SECRET} if FIREBASE_DB_SECRET else None
+            try:
+                async with session.get(url, params=params, timeout=aiohttp.ClientTimeout(total=2)) as response:
+                    if response.status != 200:
+                        return None
+                    return await response.json()
+            except Exception:
+                return None
+
+        await websocket.send_json(
+            {
+                "type": "info",
+                "message": "Connected to NeuroRehab WebSocket",
+                "ai_enabled": AI_AVAILABLE,
                 "device": device_id,
-            })
-            
-            ecg_buffer.append(last_ecg)
+                "debug": debug_enabled,
+            }
+        )
+
+        print(
+            f"[WebSocket] Client connected, AI: {'Enabled' if AI_AVAILABLE else 'Disabled'}, device={device_id}",
+            flush=True,
+        )
+
+        while True:
+            current_timestamp = time.time()
+
+            # Fetch /sample_100ms every 100ms (5 ticks), reuse last value between ticks.
+            if local_time % 5 == 0:
+                firebase_path_used = f"/{device_id}/latest/sample_100ms"
+                sample_data = await fetch_path(f"{device_id}/latest/sample_100ms")
+                if isinstance(sample_data, dict) and sample_data:
+                    last_sample_data = sample_data
+                    is_firebase_connected = True
+                    last_sample_fetch_ts = current_timestamp
+                else:
+                    # Keep last known value to preserve realtime stream even on transient hiccups.
+                    is_firebase_connected = False
+
+                # Send error periodically when device/path not found (every 5s)
+                if not is_firebase_connected and local_time % 250 == 0:
+                    try:
+                        await websocket.send_json(
+                            {
+                                "type": "error",
+                                "message": f"Firebase device/path not found: {firebase_path_used}",
+                                "timestamp": current_timestamp,
+                            }
+                        )
+                    except Exception:
+                        pass
+
+            ecg_val = 512
+            flex_value = None
+            ts_ms_val = 0
+            if isinstance(last_sample_data, dict) and last_sample_data:
+                ecg_val = last_sample_data.get("ecg", 512)
+                flex_value = last_sample_data.get("flex", None)
+                ts_ms_val = last_sample_data.get("ts_ms", 0)
+
+            if debug_enabled and local_time % 50 == 0:
+                fetch_age_ms = None
+                if last_sample_fetch_ts is not None:
+                    fetch_age_ms = int((current_timestamp - last_sample_fetch_ts) * 1000)
+                debug_payload = {
+                    "type": "debug",
+                    "ecg": ecg_val,
+                    "flex": flex_value,
+                    "ts_ms": ts_ms_val,
+                    "firebase_connected": is_firebase_connected,
+                    "firebase_path": firebase_path_used,
+                    "sample_fetch_age_ms": fetch_age_ms,
+                    "timestamp": current_timestamp,
+                    "device": device_id,
+                }
+                try:
+                    await websocket.send_json(debug_payload)
+                except Exception:
+                    pass
+                print(f"[WebSocket][debug] {debug_payload}", flush=True)
+
+            # 1) ECG (every tick)
+            await websocket.send_json(
+                {
+                    "type": "ecg",
+                    "value": ecg_val,
+                    "ts_ms": ts_ms_val,
+                    "timestamp": current_timestamp,
+                    "firebase_connected": is_firebase_connected,
+                    "device": device_id,
+                    "firebase_path": firebase_path_used,
+                }
+            )
+
+            ecg_buffer.append(int(ecg_val) if ecg_val is not None else 512)
             if len(ecg_buffer) > 1500:
                 del ecg_buffer[:100]
 
-            # B. Flex Packet (Send frequently for game responsiveness, e.g. 10Hz)
+            # 2) Flex (every 100ms = 10Hz, aligned with sample_100ms)
             if local_time % 5 == 0:
-                # Map single flex sensor to Middle finger
                 flex_packet = {
                     "thumb": None,
                     "index": None,
-                    "middle": last_flex,
+                    "middle": flex_value,
                     "ring": None,
                     "pinky": None,
                 }
-                await websocket.send_json({
-                    "type": "flex",
-                    "values": flex_packet,
-                    "timestamp": loop_start,
-                    "firebase_connected": is_firebase_connected,
-                    "device": device_id,
-                })
+                await websocket.send_json(
+                    {
+                        "type": "flex",
+                        "values": flex_packet,
+                        "ts_ms": ts_ms_val,
+                        "timestamp": current_timestamp,
+                        "firebase_connected": is_firebase_connected,
+                        "device": device_id,
+                        "firebase_path": firebase_path_used,
+                    }
+                )
 
-            # C. Vitals Packet (Every 1s)
-            if local_time % 50 == 0:
-                await websocket.send_json({
-                    "type": "vitals",
-                    "bpm": last_bpm,
-                    "spo2": last_spo2,
-                    "fingerDetected": (last_bpm > 0 and last_spo2 > 0),
-                    "timestamp": loop_start,
-                    "firebase_connected": is_firebase_connected,
-                    "device": device_id,
-                })
+            # 3) Vitals (every 5s) from /<device>/latest
+            if local_time % 250 == 0:
+                bpm = 0
+                spo2 = 0
+                latest_root = await fetch_path(f"{device_id}/latest")
+                if isinstance(latest_root, dict) and latest_root:
+                    bpm = latest_root.get("bpm", 0)
+                    spo2 = latest_root.get("spo2", 0)
 
-            # D. AI Prediction (Every 2s = 100 ticks)
+                await websocket.send_json(
+                    {
+                        "type": "vitals",
+                        "bpm": bpm,
+                        "spo2": spo2,
+                        "fingerDetected": bool(bpm) and bool(spo2),
+                        "timestamp": current_timestamp,
+                        "firebase_connected": is_firebase_connected,
+                        "device": device_id,
+                        "firebase_path": f"/{device_id}/latest",
+                    }
+                )
+
+            # 4) AI Prediction (every 2s)
             if local_time % 100 == 0:
-                if len(ecg_buffer) >= 500:
-                   if AI_AVAILABLE:
-                       snapshot = list(ecg_buffer)
-                       loop = asyncio.get_running_loop()
-                       try:
-                           result = await loop.run_in_executor(
-                               ai_executor, run_ai_prediction, snapshot, SAMPLING_RATE
-                           )
-                           if result and "error" not in result:
-                               await websocket.send_json({
-                                   "type": "prediction",
-                                   "data": result,
-                                   "timestamp": loop_start
-                               })
-                       except Exception:
-                           pass
-                else:
-                    # Send buffering status
-                    progress = int((len(ecg_buffer) / 500) * 100)
-                    await websocket.send_json({
-                        "type": "prediction",
-                        "data": {
-                            "prediction_label": f"Buffering {progress}%",
+                if len(ecg_buffer) > 500:
+                    if AI_AVAILABLE:
+                        loop = asyncio.get_running_loop()
+                        snapshot = list(ecg_buffer)
+
+                        try:
+                            result = await loop.run_in_executor(
+                                ai_executor,
+                                run_ai_prediction,
+                                snapshot,
+                                SAMPLING_RATE,
+                            )
+                            if result and "error" not in result:
+                                await websocket.send_json(
+                                    {
+                                        "type": "prediction",
+                                        "data": result,
+                                        "timestamp": current_timestamp,
+                                    }
+                                )
+                        except Exception as e:
+                            print(f"[AI] Error: {e}", flush=True)
+                    else:
+                        ai_status = {
+                            "prediction_label": "AI Disabled",
                             "confidence": 0,
-                            "all_probabilities": {'A':0, 'N':0, 'O':0, '~':0}
+                            "all_probabilities": {
+                                "A (AFib)": 0,
+                                "N (Normal)": 0,
+                                "O (Other)": 0,
+                                "~ (Noisy)": 0,
+                            },
+                        }
+                        await websocket.send_json(
+                            {
+                                "type": "prediction",
+                                "data": ai_status,
+                                "timestamp": current_timestamp,
+                            }
+                        )
+                else:
+                    progress = int((len(ecg_buffer) / 500) * 100)
+                    buffering_data = {
+                        "prediction_label": f"Buffering {progress}%",
+                        "confidence": 0,
+                        "all_probabilities": {
+                            "A (AFib)": 0,
+                            "N (Normal)": 0,
+                            "O (Other)": 0,
+                            "~ (Noisy)": 0,
                         },
-                        "timestamp": loop_start
-                    })
+                    }
+                    await websocket.send_json(
+                        {
+                            "type": "prediction",
+                            "data": buffering_data,
+                            "timestamp": current_timestamp,
+                        }
+                    )
 
-            # Loop timing
             local_time += 1
-            elapsed = time.time() - loop_start
-            sleep_time = max(0.0, 0.02 - elapsed) # Target 20ms
-            await asyncio.sleep(sleep_time)
-
+            await asyncio.sleep(0.02)  # 20ms tick
+            
     except WebSocketDisconnect:
-        print(f"[WebSocket] Client {device_id} disconnected", flush=True)
+        print("[WebSocket] Client disconnected", flush=True)
         manager.disconnect(websocket)
     except Exception as e:
         print(f"[WebSocket] Error: {e}", flush=True)
         manager.disconnect(websocket)
+    finally:
+        if session is not None:
+            try:
+                await session.close()
+            except Exception:
+                pass
